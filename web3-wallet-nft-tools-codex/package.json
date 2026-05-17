@@ -1,0 +1,23 @@
+{
+  "name": "web3-wallet-nft-tools-codex",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Codex-ready monorepo for Web3 wallet and NFT tooling.",
+  "packageManager": "pnpm@10.11.0",
+  "scripts": {
+    "dev": "pnpm --filter @web3-wallet-nft-tools/web dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "nft:generate": "pnpm --filter @web3-wallet-nft-tools/nft-tools generate",
+    "nft:validate": "pnpm --filter @web3-wallet-nft-tools/nft-tools validate",
+    "contracts:build": "cd packages/contracts && forge build",
+    "contracts:test": "cd packages/contracts && forge test"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "typescript": "^5.8.0"
+  }
+}

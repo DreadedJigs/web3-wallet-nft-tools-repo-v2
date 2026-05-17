@@ -1,0 +1,24 @@
+{
+  "collectionName": "Example Apes",
+  "description": "Example generated metadata for a Web3 NFT collection.",
+  "imageBaseUri": "ipfs://REPLACE_WITH_IMAGE_CID",
+  "externalUrlBase": "https://example.com/nft",
+  "layers": [
+    {
+      "trait_type": "Background",
+      "values": ["Cave", "Jungle", "Outer Space", "Launch Pad"]
+    },
+    {
+      "trait_type": "Fur",
+      "values": ["Black", "Brown", "Gold", "Blue"]
+    },
+    {
+      "trait_type": "Headwear",
+      "values": ["None", "Army Helmet", "Astronaut Helmet", "Flatbrim Hat"]
+    },
+    {
+      "trait_type": "Companion",
+      "values": ["None", "Kaizo", "Spike"]
+    }
+  ]
+}

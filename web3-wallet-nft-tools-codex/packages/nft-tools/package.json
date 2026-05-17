@@ -1,0 +1,20 @@
+{
+  "name": "@web3-wallet-nft-tools/nft-tools",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "pnpm build && node --test dist/**/*.test.js",
+    "generate": "pnpm build && node dist/cli/generate.js --input examples/traits.json --out out/metadata --count 10",
+    "validate": "pnpm build && node dist/cli/validate.js --dir out/metadata"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  }
+}

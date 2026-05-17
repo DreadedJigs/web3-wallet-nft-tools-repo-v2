@@ -1,0 +1,30 @@
+# dependencies
+node_modules
+.pnpm-store
+
+# build outputs
+.next
+out
+dist
+coverage
+.cache
+
+# env/secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.secret
+
+# foundry
+packages/contracts/cache
+packages/contracts/out
+packages/contracts/broadcast
+
+# generated NFT output
+packages/nft-tools/out
+
+# misc
+.DS_Store
+*.log
