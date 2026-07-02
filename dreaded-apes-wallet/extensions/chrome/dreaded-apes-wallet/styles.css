@@ -23,8 +23,9 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    linear-gradient(180deg, rgba(214, 77, 77, 0.08), transparent 340px),
-    radial-gradient(circle at 100% 0%, rgba(69, 182, 189, 0.12), transparent 420px),
+    linear-gradient(180deg, rgba(13, 13, 15, 0.56), rgba(13, 13, 15, 0.98) 540px),
+    linear-gradient(90deg, rgba(13, 13, 15, 0.74), rgba(13, 13, 15, 0.38), rgba(13, 13, 15, 0.82)),
+    url("assets/wallet/wallet-hero-bg-1600x900.png") top center / min(100%, 1600px) auto no-repeat,
     var(--bg);
 }
 
@@ -127,18 +128,13 @@ a {
 }
 
 .brand-mark {
-  display: grid;
-  place-items: center;
   width: 48px;
   height: 48px;
   border: 1px solid rgba(245, 241, 232, 0.22);
   border-radius: 8px;
-  background:
-    linear-gradient(135deg, rgba(214, 77, 77, 0.92), rgba(217, 164, 65, 0.86)),
-    #1d1a19;
-  color: #150d0d;
-  font-size: 0.95rem;
-  font-weight: 950;
+  background: #1d1a19;
+  object-fit: cover;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
 }
 
 .eyebrow,
@@ -336,11 +332,20 @@ a.ghost-button {
   gap: 0.65rem;
   border-top: 1px solid var(--line);
   padding-top: 1rem;
+  background:
+    linear-gradient(90deg, rgba(17, 17, 19, 0.92), rgba(17, 17, 19, 0.58)),
+    url("assets/wallet/extension-install-card-1200x800.png") center / cover;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: -0.15rem;
 }
 
 .player-stage {
   grid-area: player;
   overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(23, 23, 25, 0.82), rgba(23, 23, 25, 0.96)),
+    url("assets/wallet/wallet-hero-bg-1600x900.png") center / cover;
 }
 
 .player-grid {
@@ -352,7 +357,10 @@ a.ghost-button {
 .media-screen {
   position: relative;
   min-height: 520px;
-  background: #09090b;
+  background:
+    linear-gradient(180deg, rgba(9, 9, 11, 0.08), rgba(9, 9, 11, 0.46)),
+    url("assets/wallet/media-vault-empty-state-1200x800.png") center / cover,
+    #09090b;
 }
 
 .media-screen canvas {
@@ -759,6 +767,9 @@ input[type="range"] {
 .signing {
   grid-area: signing;
   padding: 1rem;
+  background:
+    linear-gradient(180deg, rgba(23, 23, 25, 0.9), rgba(23, 23, 25, 0.98)),
+    url("assets/wallet/guard-shield-panel-1200x800.png") center / cover;
 }
 
 .full-width {

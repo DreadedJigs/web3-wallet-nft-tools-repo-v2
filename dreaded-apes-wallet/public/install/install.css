@@ -8,10 +8,11 @@
 
 .install-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(180px, 240px);
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 420px);
   align-items: center;
   gap: 1rem;
   padding: 1.2rem;
+  overflow: hidden;
 }
 
 .install-hero h2,
@@ -27,6 +28,25 @@
   font-size: 0.86rem;
 }
 
+.install-art,
+.option-art {
+  display: block;
+  width: 100%;
+  border: 1px solid rgba(245, 241, 232, 0.12);
+  border-radius: 8px;
+  background: #09090b;
+  object-fit: cover;
+}
+
+.install-art {
+  aspect-ratio: 3 / 2;
+  grid-row: span 2;
+}
+
+.option-art {
+  aspect-ratio: 3 / 2;
+}
+
 .install-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -38,6 +58,7 @@
   align-content: space-between;
   gap: 0.8rem;
   padding: 1rem;
+  overflow: hidden;
 }
 
 @media (max-width: 760px) {

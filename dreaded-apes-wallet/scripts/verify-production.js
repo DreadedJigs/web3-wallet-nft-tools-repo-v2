@@ -8,6 +8,11 @@ const requiredFiles = [
   'public/sw.js',
   'public/.nojekyll',
   'public/manifest.webmanifest',
+  'public/assets/core/dreaded-apes-app-icon-512.png',
+  'public/assets/core/dreaded-apes-maskable-icon-512.png',
+  'public/assets/wallet/wallet-hero-bg-1600x900.png',
+  'public/assets/wallet/guard-shield-panel-1200x800.png',
+  'public/assets/covers/cover-static-midnight.png',
   'public/guard/dreaded-guard.js',
   'public/guard/v1/dreaded-guard.js',
   'packages/dreaded-guard/dist/dreaded-guard.js',
@@ -43,10 +48,13 @@ if (guard !== guardDist) fail('public guard and package dist guard bundle are no
 if (!guard.includes('createBackgroundMonitor')) fail('guard bundle is missing background monitor API');
 if (!app.includes('createBackgroundMonitor')) fail('wallet app is not installing the background guard monitor');
 if (!html.includes('id="guardMonitor"')) fail('wallet shell is missing the background guard monitor panel');
-if (!serviceWorker.includes('dreaded-apes-wallet-v2')) fail('service worker cache version was not bumped to v2');
+if (!serviceWorker.includes('dreaded-apes-wallet-v3')) fail('service worker cache version was not bumped to v3');
 if (manifest.name !== 'Dreaded Apes Wallet') fail('PWA manifest has unexpected app name');
+if (!manifest.icons.some(icon => icon.src === 'assets/core/dreaded-apes-app-icon-512.png')) fail('PWA manifest is missing the generated app icon');
+if (!manifest.icons.some(icon => icon.src === 'assets/core/dreaded-apes-maskable-icon-512.png')) fail('PWA manifest is missing the generated maskable icon');
 if (!zip.includes(Buffer.from('guard/dreaded-guard.js'))) fail('extension ZIP is missing guard/dreaded-guard.js');
 if (!zip.includes(Buffer.from('popup.html'))) fail('extension ZIP is missing popup.html');
+if (!zip.includes(Buffer.from('assets/core/dreaded-apes-app-icon-512.png'))) fail('extension ZIP is missing generated icon assets');
 if (packageJson.name !== 'dreaded-apes-wallet') fail('package name is unexpected');
 
 const staleTerms = [

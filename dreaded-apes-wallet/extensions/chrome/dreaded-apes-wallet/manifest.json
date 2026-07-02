@@ -5,10 +5,13 @@
   "description": "A multichain media vault and Dreaded Guard transaction review layer.",
   "action": {
     "default_title": "Dreaded Apes Wallet",
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+      "128": "assets/core/dreaded-apes-app-icon-512.png"
+    }
   },
   "icons": {
-    "128": "icon.svg"
+    "128": "assets/core/dreaded-apes-app-icon-512.png"
   },
   "permissions": [
     "storage"

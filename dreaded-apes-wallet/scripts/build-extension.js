@@ -22,6 +22,23 @@ for (const [from, to] of copies) {
   fs.copyFileSync(source, target);
 }
 
+function copyDirectory(sourceDir, targetDir) {
+  fs.mkdirSync(targetDir, { recursive: true });
+  for (const entry of fs.readdirSync(sourceDir, { withFileTypes: true })) {
+    const source = path.join(sourceDir, entry.name);
+    const target = path.join(targetDir, entry.name);
+    if (entry.isDirectory()) {
+      copyDirectory(source, target);
+    } else {
+      fs.copyFileSync(source, target);
+    }
+  }
+}
+
+const extensionAssetsDir = path.join(extensionDir, 'assets');
+if (fs.existsSync(extensionAssetsDir)) fs.rmSync(extensionAssetsDir, { recursive: true, force: true });
+copyDirectory(path.join(publicDir, 'assets'), extensionAssetsDir);
+
 fs.mkdirSync(path.join(publicDir, 'downloads'), { recursive: true });
 fs.writeFileSync(
   path.join(publicDir, 'downloads', 'extension-install.txt'),

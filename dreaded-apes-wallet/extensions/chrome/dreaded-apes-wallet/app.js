@@ -103,6 +103,7 @@ const media = [
     license: 'Collector cut',
     price: 0.18,
     format: '4K stream',
+    cover: 'assets/covers/cover-static-midnight.png',
     colors: ['#1a1b22', '#d64d4d', '#d9a441']
   },
   {
@@ -118,6 +119,7 @@ const media = [
     license: 'Stem pack',
     price: 0.08,
     format: 'Lossless',
+    cover: 'assets/covers/cover-black-glass-radio.png',
     colors: ['#0c0c0f', '#8f7cff', '#45b6bd']
   },
   {
@@ -133,6 +135,7 @@ const media = [
     license: 'Print ready',
     price: 42,
     format: 'RAW bundle',
+    cover: 'assets/covers/cover-red-sun-contact-sheet.png',
     colors: ['#220f0f', '#d64d4d', '#f1c16b']
   },
   {
@@ -148,6 +151,7 @@ const media = [
     license: 'Loop rights',
     price: 1.2,
     format: 'Spatial',
+    cover: 'assets/covers/cover-antenna-choir.png',
     colors: ['#09120f', '#55b978', '#45b6bd']
   },
   {
@@ -163,6 +167,7 @@ const media = [
     license: 'Private stream',
     price: 0.11,
     format: '1080p',
+    cover: 'assets/covers/cover-cold-frame.png',
     colors: ['#0b1a1c', '#45b6bd', '#f5f1e8']
   },
   {
@@ -178,6 +183,7 @@ const media = [
     license: 'Gallery view',
     price: 0.006,
     format: 'Inscribed set',
+    cover: 'assets/covers/cover-vault-polaroids.png',
     colors: ['#17100a', '#d9a441', '#f5f1e8']
   },
   {
@@ -193,6 +199,7 @@ const media = [
     license: 'Festival pass',
     price: 0.21,
     format: 'HD stream',
+    cover: 'assets/covers/cover-block-cuts-vol-9.png',
     colors: ['#121017', '#d64d4d', '#8f7cff']
   },
   {
@@ -208,6 +215,7 @@ const media = [
     license: 'Editorial',
     price: 0.03,
     format: 'Contact sheet',
+    cover: 'assets/covers/cover-mural-notes.png',
     colors: ['#10151d', '#4f8cff', '#d9a441']
   }
 ];
@@ -309,6 +317,7 @@ const state = {
 };
 let deferredInstallPrompt = null;
 let guardMonitor = null;
+const imageCache = new Map();
 
 function persist() {
   localStorage.setItem(storageKey, JSON.stringify({
@@ -736,6 +745,31 @@ function drawCover(canvas, item, elapsed = 0, mini = false) {
   const height = canvas.height;
   const [base, accent, light] = item.colors;
   const t = elapsed * 0.04;
+
+  if (item.cover) {
+    const cached = imageCache.get(item.cover);
+    if (cached?.complete && cached.naturalWidth) {
+      const imageRatio = cached.naturalWidth / cached.naturalHeight;
+      const canvasRatio = width / height;
+      const drawHeight = imageRatio > canvasRatio ? height : width / imageRatio;
+      const drawWidth = imageRatio > canvasRatio ? height * imageRatio : width;
+      const drawX = (width - drawWidth) / 2;
+      const drawY = (height - drawHeight) / 2;
+      ctx.clearRect(0, 0, width, height);
+      ctx.drawImage(cached, drawX, drawY, drawWidth, drawHeight);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+      ctx.fillRect(0, 0, width, height);
+      return;
+    }
+
+    if (!cached && typeof Image !== 'undefined') {
+      const image = new Image();
+      image.onload = () => drawCover(canvas, item, elapsed, mini);
+      image.onerror = () => imageCache.set(item.cover, { complete: false, naturalWidth: 0 });
+      image.src = item.cover;
+      imageCache.set(item.cover, image);
+    }
+  }
 
   const gradient = ctx.createLinearGradient(0, 0, width, height);
   gradient.addColorStop(0, base);
