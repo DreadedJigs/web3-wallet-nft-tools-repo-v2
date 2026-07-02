@@ -187,22 +187,22 @@
           </div>
         </div>
       </div>
-    </section>
 
-    <section class="library surface" aria-label="Aggregated media library">
-      <div class="section-title library-title">
-        <div>
-          <p class="eyebrow">Media Vault</p>
-          <h2>Movies, Music, Photos</h2>
+      <section class="library player-vault" aria-label="Aggregated media library">
+        <div class="section-title library-title">
+          <div>
+            <p class="eyebrow" id="libraryScope">Media Vault</p>
+            <h2 id="libraryTitle">Movies, Music, Photos</h2>
+          </div>
+          <label class="search-box">
+            <span>Search</span>
+            <input id="searchMedia" type="search" placeholder="Title, creator, chain, market" />
+          </label>
         </div>
-        <label class="search-box">
-          <span>Search</span>
-          <input id="searchMedia" type="search" placeholder="Title, creator, chain, market" />
-        </label>
-      </div>
 
-      <div class="filter-row" id="typeFilters"></div>
-      <div class="media-grid" id="mediaGrid"></div>
+        <div class="filter-row" id="typeFilters"></div>
+        <div class="media-grid" id="mediaGrid"></div>
+      </section>
     </section>
 
     <section class="market-panel surface" aria-label="Sources">

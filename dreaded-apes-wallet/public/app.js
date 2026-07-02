@@ -337,6 +337,7 @@ const securityProtocols = DreadedGuard.protocols;
 
 const state = {
   activeChain: chains.some(chain => chain.id === saved.activeChain) ? saved.activeChain : 'apechain',
+  chainFilter: chains.some(chain => chain.id === saved.chainFilter) ? saved.chainFilter : '',
   activeMedia: saved.activeMedia || '',
   filter: saved.filter || 'all',
   marketFilter: saved.marketFilter || 'all',
@@ -380,6 +381,7 @@ const guardReviewResolvers = new Map();
 function persist() {
   const snapshot = {
     activeChain: state.activeChain,
+    chainFilter: state.chainFilter,
     activeMedia: state.activeMedia,
     filter: state.filter,
     marketFilter: state.marketFilter,
@@ -420,6 +422,9 @@ function rebuildChains() {
   chains = chainSnapshot(state);
   if (!chains.some(chain => chain.id === state.activeChain)) {
     state.activeChain = chains.find(chain => chain.id === 'apechain')?.id || chains[0]?.id || '';
+  }
+  if (state.chainFilter && !chains.some(chain => chain.id === state.chainFilter)) {
+    state.chainFilter = '';
   }
 }
 
@@ -486,9 +491,27 @@ function vaultMedia() {
   return state.address && normalizeAddress(state.assetOwner) === normalizeAddress(state.address) ? state.mediaAssets : [];
 }
 
-function activeMedia() {
+function scopedVaultMedia() {
   const items = vaultMedia();
+  return state.chainFilter ? items.filter(item => item.chain === state.chainFilter) : items;
+}
+
+function activeMedia() {
+  const items = scopedVaultMedia();
   return items.find(item => item.id === state.activeMedia) || items[0] || null;
+}
+
+function syncActiveMediaToScope() {
+  const items = scopedVaultMedia();
+  if (!items.length) {
+    state.activeMedia = '';
+    return;
+  }
+  if (!items.some(item => item.id === state.activeMedia)) {
+    state.activeMedia = items[0].id;
+    state.elapsed = 0;
+    state.playing = false;
+  }
 }
 
 function mediaChain(item) {
@@ -1257,7 +1280,7 @@ async function refreshWalletAssets() {
     : onlineSources
       ? `No owned media NFTs returned by ${onlineSources} address-based marketplace routes. Native balances are still shown.`
       : 'Marketplace and explorer routes did not return NFT metadata. Native balances are still shown.';
-  state.activeMedia = indexed.assets.some(item => item.id === state.activeMedia) ? state.activeMedia : indexed.assets[0]?.id || '';
+  syncActiveMediaToScope();
   state.elapsed = 0;
   persist();
   renderAll();
@@ -1457,11 +1480,15 @@ function ensureSecurity(tx) {
 
 function renderChains() {
   const ownedMedia = vaultMedia();
+  const scopedMedia = scopedVaultMedia();
+  const filteredChain = state.chainFilter ? chains.find(chain => chain.id === state.chainFilter) : null;
   const readyBalances = Object.values(state.chainBalances).filter(item => item.status === 'ready');
   $('#portfolioValue').textContent = state.address ? `${readyBalances.length || 0} chains` : 'Connect wallet';
   $('#walletAddress').textContent = state.address ? shortAddress(state.address) : state.walletLabel;
-  $('#chainCount').textContent = state.address ? `${ownedMedia.length} media` : '0 indexed';
-  $('#networkStatus').textContent = state.address ? `${shortAddress(state.address)} on ${activeChain().name}` : 'Wallet offline';
+  $('#chainCount').textContent = state.address ? `${scopedMedia.length} media` : '0 indexed';
+  $('#networkStatus').textContent = state.address
+    ? `${shortAddress(state.address)} ${filteredChain ? `viewing ${filteredChain.name}` : 'viewing all chains'}`
+    : 'Wallet offline';
   $('#hardwareState').textContent = state.hardware;
   $('#transportMode').textContent = state.transport;
   const connectButton = $('#connectWallet');
@@ -1472,7 +1499,7 @@ function renderChains() {
 
   $('#chainList').innerHTML = chains.map(chain => `
     <div class="chain-row">
-      <button class="chain-button ${chain.id === state.activeChain ? 'active' : ''}" type="button" data-chain="${escapeAttr(chain.id)}" style="--chain-color: ${escapeAttr(chain.color)}">
+      <button class="chain-button ${chain.id === state.chainFilter ? 'active' : ''}" type="button" data-chain="${escapeAttr(chain.id)}" aria-pressed="${chain.id === state.chainFilter ? 'true' : 'false'}" title="${chain.id === state.chainFilter ? 'Show all chains' : `Show ${escapeAttr(chain.name)} media only`}" style="--chain-color: ${escapeAttr(chain.color)}">
         <span class="chain-dot" aria-hidden="true"></span>
         <span>
           <span class="chain-name">${escapeHtml(chain.name)}</span>
@@ -1519,7 +1546,7 @@ function renderFilters() {
 
 function filteredMedia() {
   const query = state.search.trim().toLowerCase();
-  return vaultMedia().filter(item => {
+  return scopedVaultMedia().filter(item => {
     const matchesType = state.filter === 'all' || item.type === state.filter;
     const haystack = [item.title, item.creator, item.type, item.market, mediaChain(item).name, item.token].join(' ').toLowerCase();
     return matchesType && (!query || haystack.includes(query));
@@ -1528,10 +1555,15 @@ function filteredMedia() {
 
 function renderMediaGrid() {
   const items = filteredMedia();
+  const filteredChain = state.chainFilter ? chains.find(chain => chain.id === state.chainFilter) : null;
+  if ($('#libraryScope')) $('#libraryScope').textContent = filteredChain ? `${filteredChain.name} Vault` : 'Media Vault';
+  if ($('#libraryTitle')) $('#libraryTitle').textContent = filteredChain ? `${filteredChain.name} NFTs` : 'Movies, Music, Photos';
   const emptyMessage = !state.address
     ? 'Connect wallet to index owned movies, music, photos, and NFT media.'
     : state.assetStatus === 'loading'
       ? state.assetMessage
+      : filteredChain
+        ? `No owned media NFTs found on ${filteredChain.name}. Click ${filteredChain.name} again to show all chains.`
       : state.assetMessage || 'No owned media NFTs were returned by the configured indexers.';
   $('#mediaGrid').innerHTML = items.map(item => {
     const chain = mediaChain(item);
@@ -2060,14 +2092,14 @@ function stopAudio() {
 }
 
 function nextMedia() {
-  const items = vaultMedia();
+  const items = scopedVaultMedia();
   if (!items.length) return;
   const index = items.findIndex(item => item.id === state.activeMedia);
   loadMedia(items[(index + 1) % items.length].id);
 }
 
 function previousMedia() {
-  const items = vaultMedia();
+  const items = scopedVaultMedia();
   if (!items.length) return;
   const index = items.findIndex(item => item.id === state.activeMedia);
   loadMedia(items[(index - 1 + items.length) % items.length].id);
@@ -2105,6 +2137,8 @@ function removeChain(id) {
   delete state.chainBalances[id];
   rebuildChains();
   if (state.activeChain === id) state.activeChain = chains.find(item => item.id === 'apechain')?.id || chains[0]?.id || '';
+  if (state.chainFilter === id) state.chainFilter = '';
+  syncActiveMediaToScope();
   persist();
   renderAll();
 }
@@ -2153,31 +2187,20 @@ function addCustomChain(event) {
   renderAll();
 }
 
-async function selectChain(id) {
+function selectChain(id) {
   const chain = chains.find(item => item.id === id);
   if (!chain) return;
-  state.activeChain = chain.id;
-  persist();
-  renderChains();
 
-  if (window.ethereum && chain.chainId) {
-    try {
-      await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: chain.chainId }] });
-    } catch (error) {
-      if (error.code === 4902 && chain.rpc) {
-        await window.ethereum.request({
-          method: 'wallet_addEthereumChain',
-          params: [{
-            chainId: chain.chainId,
-            chainName: chain.name,
-            nativeCurrency: { name: chain.symbol, symbol: chain.symbol, decimals: 18 },
-            rpcUrls: [chain.rpc],
-            blockExplorerUrls: chain.explorer ? [chain.explorer] : []
-          }]
-        });
-      }
-    }
-  }
+  const clearingFilter = state.chainFilter === chain.id;
+  state.chainFilter = clearingFilter ? '' : chain.id;
+  state.activeChain = chain.id;
+  state.chainNotice = clearingFilter
+    ? 'Showing NFTs from all active chains.'
+    : `Showing ${chain.name} NFTs only. Click ${chain.name} again to show all chains.`;
+  stopAudio();
+  syncActiveMediaToScope();
+  persist();
+  renderAll();
 }
 
 async function connectWallet() {
@@ -2368,6 +2391,7 @@ function resetWalletSession(message = 'Connect wallet to index owned media.', ha
   state.assetOwner = '';
   state.chainBalances = {};
   state.indexerSources = [];
+  state.chainFilter = '';
   state.activeMedia = '';
   state.assetStatus = 'idle';
   state.assetMessage = message;

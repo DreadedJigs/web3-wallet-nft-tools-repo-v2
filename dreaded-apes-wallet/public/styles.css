@@ -291,7 +291,7 @@ a.ghost-button:hover {
   grid-template-columns: 300px minmax(0, 1.58fr) minmax(330px, 0.86fr);
   grid-template-areas:
     "rail player markets"
-    "rail library signing";
+    "rail player signing";
   grid-template-rows: auto auto;
   gap: 1rem;
   width: min(1680px, 100%);
@@ -783,8 +783,13 @@ input[type="range"] {
 }
 
 .library {
-  grid-area: library;
   padding: 1rem;
+}
+
+.player-vault {
+  margin-top: 0.9rem;
+  border-top: 1px solid rgba(var(--skin-accent-rgb), 0.2);
+  background: rgba(0, 0, 0, 0.12);
 }
 
 .library-title {
@@ -1292,7 +1297,6 @@ input[type="range"] {
     grid-template-columns: 260px minmax(0, 1fr);
     grid-template-areas:
       "rail player"
-      "rail library"
       "rail markets"
       "rail signing";
     grid-template-rows: auto;
@@ -1325,7 +1329,6 @@ input[type="range"] {
     grid-template-areas:
       "rail"
       "player"
-      "library"
       "markets"
       "signing";
   }
