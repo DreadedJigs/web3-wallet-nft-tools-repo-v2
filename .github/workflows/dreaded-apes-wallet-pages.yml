@@ -31,6 +31,26 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v6
 
+      - name: Stamp deployment
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from datetime import datetime, timezone
+
+          stamp = {
+              "commit": os.environ["GITHUB_SHA"],
+              "runId": os.environ["GITHUB_RUN_ID"],
+              "runNumber": os.environ["GITHUB_RUN_NUMBER"],
+              "deployedAt": datetime.now(timezone.utc).isoformat(),
+          }
+
+          with open("dreaded-apes-wallet/public/deploy.json", "w", encoding="utf-8") as file:
+              json.dump(stamp, file, indent=2)
+              file.write("\n")
+          PY
+
       - name: Upload Dreaded Apes Wallet
         uses: actions/upload-pages-artifact@v5
         with:
@@ -39,3 +59,43 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+        continue-on-error: true
+
+      - name: Verify live Pages deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          url="https://dreadedjigs.github.io/web3-wallet-nft-tools-repo-v2/deploy.json?verify=${GITHUB_SHA}"
+
+          for attempt in {1..30}; do
+            actual="$(
+              python3 - "$url" <<'PY'
+          import json
+          import sys
+          import urllib.request
+
+          try:
+              request = urllib.request.Request(
+                  sys.argv[1],
+                  headers={"Cache-Control": "no-cache", "User-Agent": "dreaded-pages-verify"},
+              )
+
+              with urllib.request.urlopen(request, timeout=20) as response:
+                  print(json.load(response).get("commit", ""))
+          except Exception:
+              print("")
+          PY
+            )"
+
+            if [ "$actual" = "$GITHUB_SHA" ]; then
+              echo "Live Pages deployment verified for ${GITHUB_SHA}."
+              exit 0
+            fi
+
+            echo "Waiting for Pages to serve ${GITHUB_SHA}; saw '${actual:-none}' on attempt ${attempt}."
+            sleep 10
+          done
+
+          echo "Live Pages deployment did not serve ${GITHUB_SHA} after verification window."
+          exit 1
