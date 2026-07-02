@@ -58,11 +58,8 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(circle at 18% 0%, rgba(var(--skin-accent-rgb), 0.18), transparent 34rem),
-    radial-gradient(circle at 92% 12%, rgba(var(--skin-secondary-rgb), 0.15), transparent 30rem),
-    linear-gradient(180deg, rgba(10, 10, 10, 0.42), rgba(10, 10, 10, 0.98) 620px),
-    linear-gradient(90deg, rgba(10, 10, 10, 0.86), rgba(13, 27, 42, 0.55), rgba(10, 10, 10, 0.9)),
-    url("assets/modern/dreaded-apes-ui-ux-design-guide.png") top center / min(100%, 1720px) auto no-repeat,
+    linear-gradient(180deg, rgba(10, 10, 10, 0.96), rgba(10, 10, 10, 0.99)),
+    linear-gradient(90deg, rgba(10, 10, 10, 0.98), rgba(13, 27, 42, 0.72), rgba(10, 10, 10, 0.98)),
     var(--skin-bg);
 }
 
@@ -76,7 +73,7 @@ body::before {
   background-position: top 84px right -120px;
   background-repeat: no-repeat;
   background-size: min(58vw, 720px) auto;
-  opacity: 0.16;
+  opacity: 0.06;
   filter: saturate(1.14) contrast(1.05);
 }
 
@@ -294,9 +291,8 @@ a.ghost-button:hover {
   grid-template-columns: 300px minmax(0, 1.58fr) minmax(330px, 0.86fr);
   grid-template-areas:
     "rail player markets"
-    "rail player signing"
     "rail library signing";
-  grid-template-rows: minmax(680px, calc(100vh - 122px)) auto auto;
+  grid-template-rows: auto auto;
   gap: 1rem;
   width: min(1680px, 100%);
   margin: 0 auto;
@@ -304,13 +300,11 @@ a.ghost-button:hover {
 }
 
 .surface {
-  border: 1px solid rgba(var(--skin-accent-rgb), 0.24);
+  border: 1px solid rgba(var(--skin-accent-rgb), 0.18);
   border-radius: 6px;
-  background:
-    linear-gradient(145deg, rgba(var(--skin-accent-rgb), 0.08), rgba(var(--skin-glow-rgb), 0.045) 46%, rgba(255, 255, 255, 0)),
-    rgba(var(--skin-panel-rgb), 0.94);
-  box-shadow: var(--shadow), inset 0 0 0 1px rgba(var(--skin-secondary-rgb), 0.06);
-  backdrop-filter: blur(16px);
+  background: rgba(var(--skin-panel-rgb), 0.96);
+  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.42), inset 0 0 0 1px rgba(var(--skin-secondary-rgb), 0.04);
+  backdrop-filter: blur(10px);
 }
 
 .rail {
@@ -629,98 +623,103 @@ a.ghost-button:hover {
   position: relative;
   overflow: hidden;
   min-height: calc(100vh - 122px);
-  background:
-    radial-gradient(circle at 12% 14%, rgba(var(--skin-accent-rgb), 0.2), transparent 32rem),
-    radial-gradient(circle at 82% 18%, rgba(var(--skin-secondary-rgb), 0.16), transparent 30rem),
-    linear-gradient(180deg, rgba(var(--skin-panel-rgb), 0.72), rgba(var(--skin-panel-rgb), 0.96)),
-    url("assets/modern/dreaded-apes-ui-ux-design-guide.png") center / cover;
+  padding: 0.95rem;
+  background: #050507;
 }
 
 .player-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  min-height: inherit;
+  grid-template-rows: minmax(520px, 1fr) auto;
+  gap: 0.9rem;
+  min-height: calc(100vh - 154px);
 }
 
 .media-screen {
   position: relative;
-  min-height: inherit;
-  background:
-    radial-gradient(circle at 22% 12%, rgba(var(--skin-glow-rgb), 0.18), transparent 22rem),
-    linear-gradient(180deg, rgba(9, 9, 11, 0.08), rgba(9, 9, 11, 0.46)),
-    url("assets/modern/dreaded-apes-modern-brand-kit.png") center / cover,
-    #09090b;
+  display: grid;
+  place-items: center;
+  min-height: 520px;
+  border: 1px solid rgba(230, 224, 212, 0.11);
+  border-radius: 6px;
+  padding: clamp(0.8rem, 2vw, 1.6rem);
+  background: #030304;
+  overflow: hidden;
 }
 
 .media-screen canvas {
   display: block;
-  width: 100%;
-  height: 100%;
-  filter: saturate(1.08) contrast(1.04);
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: calc(100vh - 270px);
+  filter: saturate(1.04) contrast(1.02);
+}
+
+.player-native-image {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: calc(100vh - 270px);
+  object-fit: contain;
+  object-position: center;
+}
+
+.player-native-image[hidden],
+.media-screen canvas[hidden] {
+  display: none;
 }
 
 .screen-badges {
-  position: absolute;
-  left: 1rem;
-  right: 1rem;
-  bottom: 1rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  display: none;
 }
 
 .screen-badges span {
   border: 1px solid rgba(var(--skin-secondary-rgb), 0.34);
   border-radius: 6px;
-  padding: 0.34rem 0.62rem;
-  background: rgba(0, 0, 0, 0.38);
+  padding: 0.3rem 0.58rem;
+  background: rgba(0, 0, 0, 0.72);
   color: #fffaf5;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 850;
   font-family: var(--font-mono);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(6px);
 }
 
 .player-copy {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  bottom: 1rem;
+  position: static;
   z-index: 3;
   display: grid;
-  align-content: space-between;
-  gap: 1.4rem;
-  width: min(390px, calc(100% - 2rem));
-  padding: 1.2rem;
-  border: 1px solid rgba(var(--skin-accent-rgb), 0.28);
+  grid-template-columns: minmax(240px, 0.9fr) minmax(320px, 1.1fr);
+  align-items: end;
+  gap: 0.9rem;
+  width: 100%;
+  padding: 0.95rem;
+  border: 1px solid rgba(var(--skin-accent-rgb), 0.18);
   border-radius: 6px;
-  background:
-    linear-gradient(180deg, rgba(var(--skin-panel-rgb), 0.76), rgba(var(--skin-panel-rgb), 0.96)),
-    url("assets/core/dreaded-apes-logo-1024.png") 118% -16% / 190px auto no-repeat;
-  box-shadow: 0 24px 68px rgba(0, 0, 0, 0.36);
-  backdrop-filter: blur(18px);
+  background: rgba(var(--skin-panel-rgb), 0.96);
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .player-copy h2 {
   font-family: var(--font-display);
-  font-size: 2.1rem;
-  line-height: 1.03;
+  font-size: clamp(1.25rem, 2vw, 1.8rem);
+  line-height: 1.08;
   margin-bottom: 0.35rem;
 }
 
 .track-meta {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.6rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.48rem;
 }
 
 .track-meta div {
   border: 1px solid var(--line);
   border-radius: 6px;
-  padding: 0.72rem;
-  background:
-    linear-gradient(135deg, rgba(var(--skin-secondary-rgb), 0.07), transparent),
-    rgba(17, 17, 19, 0.82);
+  padding: 0.58rem;
+  background: rgba(17, 17, 19, 0.78);
   min-width: 0;
 }
 
@@ -755,6 +754,7 @@ a.ghost-button:hover {
 .progress-wrap {
   display: grid;
   gap: 0.45rem;
+  grid-column: 1 / -1;
 }
 
 .time-row {
@@ -771,6 +771,7 @@ input[type="range"] {
 }
 
 .player-controls {
+  grid-column: 1 / -1;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.55rem;
@@ -980,14 +981,14 @@ input[type="range"] {
 .media-thumb {
   display: block;
   width: 100%;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 1 / 1;
   background: #08080a;
-  object-fit: cover;
-  transition: transform 160ms ease, filter 160ms ease;
+  object-fit: contain;
+  padding: 0.35rem;
+  transition: filter 160ms ease;
 }
 
 .media-card:hover .media-thumb {
-  transform: scale(1.03);
   filter: saturate(1.08);
 }
 
@@ -1280,6 +1281,7 @@ input[type="range"] {
 
   .player-grid {
     grid-template-columns: 1fr;
+    grid-template-rows: minmax(360px, 58vh) auto;
   }
 
   .player-stage {
@@ -1287,13 +1289,17 @@ input[type="range"] {
   }
 
   .player-copy {
-    position: static;
+    grid-template-columns: 1fr;
     width: auto;
-    border-radius: 0;
   }
 
   .media-screen {
     min-height: 360px;
+  }
+
+  .media-screen canvas,
+  .player-native-image {
+    max-height: 56vh;
   }
 }
 

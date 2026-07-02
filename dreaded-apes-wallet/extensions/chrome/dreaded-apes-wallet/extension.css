@@ -48,18 +48,25 @@ h1 {
   grid-template-columns: 1fr;
 }
 
+.player-grid {
+  grid-template-rows: minmax(240px, auto) auto;
+}
+
 .player-stage {
   min-height: auto;
 }
 
 .player-copy {
-  position: static;
   width: auto;
-  border-radius: 0;
 }
 
 .media-screen {
   min-height: 240px;
+}
+
+.media-screen canvas,
+.player-native-image {
+  max-height: 300px;
 }
 
 .player-copy h2 {

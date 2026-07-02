@@ -1386,9 +1386,16 @@ function renderMediaGrid() {
 function renderPlayer() {
   const item = activeMedia();
   const canvas = $('#playerCanvas');
+  const playerImage = $('#playerImage');
   configurePlayerCanvas(canvas);
 
   if (!item) {
+    if (playerImage) {
+      playerImage.hidden = true;
+      playerImage.removeAttribute('src');
+      playerImage.removeAttribute('data-natural-size');
+    }
+    if (canvas) canvas.hidden = false;
     $('#activeMediaType').textContent = state.address ? 'Vault' : 'Offline';
     $('#activeMediaChain').textContent = activeChain().name;
     $('#activeMarket').textContent = state.address ? 'Wallet indexed' : 'Wallet required';
@@ -1411,6 +1418,33 @@ function renderPlayer() {
   }
 
   const chain = mediaChain(item);
+  const imageUrl = item.type === 'photo'
+    ? safeAssetUrl(item.mediaUrl || item.cover, '')
+    : safeAssetUrl(item.cover, '');
+  if (playerImage && imageUrl) {
+    playerImage.hidden = false;
+    playerImage.alt = item.title;
+    playerImage.onload = () => {
+      playerImage.dataset.naturalSize = `${playerImage.naturalWidth}x${playerImage.naturalHeight}`;
+    };
+    playerImage.onerror = () => {
+      playerImage.hidden = true;
+      if (canvas) canvas.hidden = false;
+    };
+    if (playerImage.getAttribute('src') !== imageUrl) {
+      playerImage.removeAttribute('data-natural-size');
+      playerImage.src = imageUrl;
+    }
+    drawCover(canvas, item, state.elapsed, false);
+    if (canvas) canvas.hidden = true;
+  } else {
+    if (playerImage) {
+      playerImage.hidden = true;
+      playerImage.removeAttribute('src');
+      playerImage.removeAttribute('data-natural-size');
+    }
+    if (canvas) canvas.hidden = false;
+  }
   $('#activeMediaType').textContent = titleCase(item.type);
   $('#activeMediaChain').textContent = chain.name;
   $('#activeMarket').textContent = item.market;
@@ -1429,7 +1463,7 @@ function renderPlayer() {
     ['Network', `${chain.name} - ${state.chainBalances[chain.id]?.status || 'indexed'}`]
   ].map(([label, value]) => `<div><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join('');
 
-  drawCover(canvas, item, state.elapsed, false);
+  if (!imageUrl) drawCover(canvas, item, state.elapsed, false);
   renderMediaGrid();
 }
 
@@ -1636,14 +1670,15 @@ function drawCover(canvas, item, elapsed = 0, mini = false) {
     if (cached?.complete && cached.naturalWidth) {
       const imageRatio = cached.naturalWidth / cached.naturalHeight;
       const canvasRatio = width / height;
-      const drawHeight = imageRatio > canvasRatio ? height : width / imageRatio;
-      const drawWidth = imageRatio > canvasRatio ? height * imageRatio : width;
+      const fitScale = Math.min(1, width / cached.naturalWidth, height / cached.naturalHeight);
+      const drawWidth = cached.naturalWidth * fitScale;
+      const drawHeight = cached.naturalHeight * fitScale;
       const drawX = (width - drawWidth) / 2;
       const drawY = (height - drawHeight) / 2;
       ctx.clearRect(0, 0, width, height);
-      ctx.drawImage(cached, drawX, drawY, drawWidth, drawHeight);
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+      ctx.fillStyle = '#050507';
       ctx.fillRect(0, 0, width, height);
+      ctx.drawImage(cached, drawX, drawY, drawWidth, drawHeight);
       return;
     }
 
@@ -1706,15 +1741,12 @@ function drawCover(canvas, item, elapsed = 0, mini = false) {
     ctx.fillRect(margin + 28, margin + 30, width - margin * 2 - 80, height - margin * 2 - 100);
   }
 
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.42)';
-  ctx.fillRect(0, height - (mini ? 54 : 92), width, mini ? 54 : 92);
-  ctx.fillStyle = '#fffaf5';
-  ctx.font = mini ? '700 22px Inter, sans-serif' : '800 44px Inter, sans-serif';
-  ctx.fillText(item.title, mini ? 18 : 34, height - (mini ? 24 : 52), width - 40);
-  if (!mini) {
-    ctx.fillStyle = 'rgba(255, 250, 245, 0.72)';
-    ctx.font = '700 20px Inter, sans-serif';
-    ctx.fillText(`${item.creator} / ${titleCase(item.type)}`, 34, height - 24, width - 68);
+  if (mini) {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.42)';
+    ctx.fillRect(0, height - 54, width, 54);
+    ctx.fillStyle = '#fffaf5';
+    ctx.font = '700 22px Inter, sans-serif';
+    ctx.fillText(item.title, 18, height - 24, width - 40);
   }
 }
 
