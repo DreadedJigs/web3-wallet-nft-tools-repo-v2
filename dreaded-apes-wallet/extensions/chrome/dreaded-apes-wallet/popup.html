@@ -70,7 +70,7 @@
     <section class="player-stage surface" aria-label="Media player">
       <div class="player-grid">
         <div class="media-screen">
-          <canvas id="playerCanvas" width="960" height="600"></canvas>
+          <canvas id="playerCanvas" width="1920" height="1080"></canvas>
           <div class="screen-badges">
             <span id="activeMediaType">Music</span>
             <span id="activeMediaChain">Ethereum</span>
@@ -84,6 +84,14 @@
             <p id="activeCreator" class="muted">Creator</p>
           </div>
           <div class="track-meta" id="trackMeta"></div>
+          <label class="quality-control" for="qualitySelect">
+            <span>Player Output</span>
+            <select id="qualitySelect" aria-label="Player output resolution">
+              <option value="auto">Auto HD</option>
+              <option value="4k">4K UHD</option>
+              <option value="8k">8K UHD</option>
+            </select>
+          </label>
           <div class="progress-wrap">
             <div class="time-row">
               <span id="elapsedTime">0:00</span>

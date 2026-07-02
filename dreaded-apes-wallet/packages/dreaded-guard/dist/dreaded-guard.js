@@ -10,7 +10,9 @@
     'permit',
     'permit2',
     'delegatecall',
-    'eth_sign'
+    'eth_sign',
+    'eth_sendRawTransaction',
+    'wallet_sendCalls'
   ];
 
   const defaultProtectedMethods = [
@@ -22,7 +24,10 @@
     'eth_signTypedData',
     'eth_signTypedData_v3',
     'eth_signTypedData_v4',
-    'wallet_sendCalls'
+    'wallet_sendCalls',
+    'wallet_addEthereumChain',
+    'wallet_switchEthereumChain',
+    'wallet_watchAsset'
   ];
 
   const defaultSignatureMethods = [
@@ -42,6 +47,8 @@
     { name: 'Intent lock', status: 'On', detail: 'Network, method, recipient, and amount are frozen before review.' },
     { name: 'Source allowlist', status: 'On', detail: 'Recipients must match the configured trusted registry.' },
     { name: 'Approval caps', status: 'Exact', detail: 'Unlimited approvals, permit abuse, and delegated signing are blocked.' },
+    { name: 'NFT transfer shield', status: 'On', detail: 'ERC-721 and ERC-1155 transfer calls are decoded and forced into review.' },
+    { name: 'Raw transaction block', status: 'On', detail: 'Opaque raw transactions and risky batch calls are blocked before wallet execution.' },
     { name: 'Origin shield', status: 'On', detail: 'Known lookalike domains and mismatched origins are quarantined.' }
   ];
 
@@ -141,6 +148,24 @@
       return { method: 'permit', approval: 'unlimited' };
     }
 
+    if (selector === '0x23b872dd' || selector === '0x42842e0e' || selector === '0xb88d4fde') {
+      return {
+        method: 'nftTransfer',
+        sender: decodeAddressParam(data, 0),
+        recipient: decodeAddressParam(data, 1),
+        approval: 'exact'
+      };
+    }
+
+    if (selector === '0xf242432a' || selector === '0x2eb2c2d6') {
+      return {
+        method: 'nftTransfer',
+        sender: decodeAddressParam(data, 0),
+        recipient: decodeAddressParam(data, 1),
+        approval: 'exact'
+      };
+    }
+
     return { method: 'contractCall', approval: 'exact' };
   }
 
@@ -177,8 +202,11 @@
     const tx = firstTransactionLikeParam(normalized.method, normalized.params);
     const decoded = decodeEvmCall(tx);
     const signature = defaultSignatureMethods.includes(normalized.method);
+    const walletConfiguration = ['wallet_addEthereumChain', 'wallet_switchEthereumChain', 'wallet_watchAsset'].includes(normalized.method);
     const permitLike = signature && looksLikePermitPayload(normalized.params);
-    const method = signature || normalized.method === 'eth_sign' ? normalized.method : (decoded.method || normalized.method);
+    const method = signature || normalized.method === 'eth_sign' || walletConfiguration || normalized.method === 'eth_sendRawTransaction' || normalized.method === 'wallet_sendCalls'
+      ? normalized.method
+      : (decoded.method || normalized.method);
     const source = defaults.source || defaults.market || defaults.appName || 'Wallet provider';
     const chainId = tx.chainId || defaults.chainId || defaults.network || '';
     const symbol = defaults.symbol || 'ETH';
@@ -192,6 +220,8 @@
       amountValue: tx.value ? weiToEth(tx.value) : Number(defaults.amountValue || 0),
       recipient,
       spender: decoded.spender || recipient,
+      sender: decoded.sender || tx.from || '',
+      assetRecipient: decoded.recipient || '',
       method: permitLike ? 'permit' : method,
       approval: permitLike ? 'unlimited' : (decoded.approval || 'none'),
       origin: defaults.origin || normalizeOrigin(),
@@ -225,6 +255,9 @@
       const registry = trustedSources[sourceName];
       const to = normalizeAddress(intent.recipient);
       const spender = normalizeAddress(intent.spender || intent.recipient);
+      const sender = normalizeAddress(intent.sender);
+      const assetRecipient = normalizeAddress(intent.assetRecipient);
+      const walletAddress = normalizeAddress(context.walletAddress);
       const signatureRequest = signatureMethods.has(intent.providerMethod || intent.method);
 
       if (intent.readOnly) {
@@ -245,12 +278,35 @@
         }
       }
 
-      if (blockedAddresses.has(to) || blockedAddresses.has(spender)) {
+      if (blockedAddresses.has(to) || blockedAddresses.has(spender) || blockedAddresses.has(assetRecipient)) {
         addFinding(findings, 'critical', 'Blocked recipient', 'BLOCKED_RECIPIENT');
       }
 
       if (highRiskMethods.has(intent.method)) {
         addFinding(findings, 'critical', 'Dangerous method', 'DANGEROUS_METHOD');
+      }
+
+      if (intent.providerMethod === 'wallet_sendCalls' || intent.method === 'wallet_sendCalls') {
+        addFinding(findings, 'high', 'Batched wallet call', 'BATCHED_CALL');
+      }
+
+      if (intent.providerMethod === 'eth_sendRawTransaction' || intent.method === 'eth_sendRawTransaction') {
+        addFinding(findings, 'critical', 'Opaque raw transaction', 'RAW_TRANSACTION');
+      }
+
+      if (intent.method === 'nftTransfer') {
+        addFinding(findings, 'high', 'NFT transfer request', 'NFT_TRANSFER');
+        if (walletAddress && sender && sender !== walletAddress) {
+          addFinding(findings, 'medium', 'NFT sender differs from connected wallet', 'NFT_SENDER_MISMATCH');
+        }
+      }
+
+      if (intent.method === 'wallet_addEthereumChain' || intent.method === 'wallet_switchEthereumChain') {
+        addFinding(findings, 'high', 'Wallet network change', 'WALLET_NETWORK_CHANGE');
+      }
+
+      if (intent.method === 'wallet_watchAsset') {
+        addFinding(findings, 'medium', 'Token import request', 'TOKEN_IMPORT_REQUEST');
       }
 
       if (signatureRequest) {

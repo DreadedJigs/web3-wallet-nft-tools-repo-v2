@@ -14,7 +14,7 @@ const chains = [
     gas: '18 gwei',
     health: 'Synced',
     color: '#8f7cff',
-    rpc: null,
+    rpc: 'https://ethereum.publicnode.com',
     explorer: 'https://etherscan.io'
   },
   {
@@ -89,144 +89,20 @@ const chains = [
   }
 ];
 
-const media = [
-  {
-    id: 'static-midnight',
-    title: 'Static at Midnight',
-    creator: 'Nadia Vale',
-    type: 'movie',
-    chain: 'base',
-    market: 'Zora',
-    runtime: '12:44',
-    duration: 764,
-    token: 'ERC-721 #441',
-    license: 'Collector cut',
-    price: 0.18,
-    format: '4K stream',
-    cover: 'assets/covers/cover-static-midnight.png',
-    colors: ['#1a1b22', '#d64d4d', '#d9a441']
-  },
-  {
-    id: 'black-glass-radio',
-    title: 'Black Glass Radio',
-    creator: 'Vanta Choir',
-    type: 'music',
-    chain: 'ethereum',
-    market: 'Sound',
-    runtime: '3:36',
-    duration: 216,
-    token: 'ERC-1155 #79',
-    license: 'Stem pack',
-    price: 0.08,
-    format: 'Lossless',
-    cover: 'assets/covers/cover-black-glass-radio.png',
-    colors: ['#0c0c0f', '#8f7cff', '#45b6bd']
-  },
-  {
-    id: 'red-sun-contact',
-    title: 'Red Sun Contact Sheet',
-    creator: 'Orion Park',
-    type: 'photo',
-    chain: 'polygon',
-    market: 'OpenSea',
-    runtime: '18 photos',
-    duration: 180,
-    token: 'ERC-721 #1208',
-    license: 'Print ready',
-    price: 42,
-    format: 'RAW bundle',
-    cover: 'assets/covers/cover-red-sun-contact-sheet.png',
-    colors: ['#220f0f', '#d64d4d', '#f1c16b']
-  },
-  {
-    id: 'antenna-choir',
-    title: 'Antenna Choir',
-    creator: 'Mira Sector',
-    type: 'music',
-    chain: 'solana',
-    market: 'Magic Eden',
-    runtime: '4:18',
-    duration: 258,
-    token: 'Metaplex #882',
-    license: 'Loop rights',
-    price: 1.2,
-    format: 'Spatial',
-    cover: 'assets/covers/cover-antenna-choir.png',
-    colors: ['#09120f', '#55b978', '#45b6bd']
-  },
-  {
-    id: 'cold-frame',
-    title: 'Cold Frame',
-    creator: 'Rift Office',
-    type: 'movie',
-    chain: 'arbitrum',
-    market: 'Livepeer',
-    runtime: '21:09',
-    duration: 1269,
-    token: 'ERC-721 #67',
-    license: 'Private stream',
-    price: 0.11,
-    format: '1080p',
-    cover: 'assets/covers/cover-cold-frame.png',
-    colors: ['#0b1a1c', '#45b6bd', '#f5f1e8']
-  },
-  {
-    id: 'vault-polaroids',
-    title: 'Vault Polaroids',
-    creator: 'Rhea Tamm',
-    type: 'photo',
-    chain: 'bitcoin',
-    market: 'Ordinals Market',
-    runtime: '9 photos',
-    duration: 144,
-    token: 'Inscription 721408',
-    license: 'Gallery view',
-    price: 0.006,
-    format: 'Inscribed set',
-    cover: 'assets/covers/cover-vault-polaroids.png',
-    colors: ['#17100a', '#d9a441', '#f5f1e8']
-  },
-  {
-    id: 'block-cuts-nine',
-    title: 'Block Cuts Vol. 9',
-    creator: 'Chain Cinema Club',
-    type: 'movie',
-    chain: 'ethereum',
-    market: 'Foundation',
-    runtime: '8:05',
-    duration: 485,
-    token: 'ERC-721 #909',
-    license: 'Festival pass',
-    price: 0.21,
-    format: 'HD stream',
-    cover: 'assets/covers/cover-block-cuts-vol-9.png',
-    colors: ['#121017', '#d64d4d', '#8f7cff']
-  },
-  {
-    id: 'mural-notes',
-    title: 'Mural Notes',
-    creator: 'Sable Index',
-    type: 'photo',
-    chain: 'base',
-    market: 'Zora',
-    runtime: '24 photos',
-    duration: 210,
-    token: 'ERC-1155 #130',
-    license: 'Editorial',
-    price: 0.03,
-    format: 'Contact sheet',
-    cover: 'assets/covers/cover-mural-notes.png',
-    colors: ['#10151d', '#4f8cff', '#d9a441']
-  }
-];
+const media = [];
+const markets = [];
 
-const markets = [
-  { name: 'Zora', category: 'photo', chain: 'Base', access: 'Vault pass', catalog: '1.8M items', speed: 'Fast', url: 'https://zora.co', art: 'assets/wallet/media-vault-empty-state-1200x800.png' },
-  { name: 'Sound', category: 'music', chain: 'Ethereum', access: 'Audio drop', catalog: '640K tracks', speed: 'Mainnet', url: 'https://www.sound.xyz', art: 'assets/covers/cover-black-glass-radio.png' },
-  { name: 'OpenSea', category: 'photo', chain: 'Polygon', access: 'Gallery view', catalog: '9.4M assets', speed: 'Synced', url: 'https://opensea.io', art: 'assets/covers/cover-red-sun-contact-sheet.png' },
-  { name: 'Magic Eden', category: 'music', chain: 'Solana', access: 'Creator set', catalog: '7.1M files', speed: 'Fast', url: 'https://magiceden.io', art: 'assets/covers/cover-antenna-choir.png' },
-  { name: 'Livepeer', category: 'movie', chain: 'Arbitrum', access: 'Video stream', catalog: '310K streams', speed: 'Stream', url: 'https://livepeer.org', art: 'assets/covers/cover-cold-frame.png' },
-  { name: 'Archive Index', category: 'movie', chain: 'Multichain', access: 'Read-only', catalog: 'Open catalog', speed: 'Indexed', url: 'https://archive.org', art: 'assets/wallet/hardware-wallet-panel-1200x800.png' }
+const playerProfiles = {
+  auto: { label: 'Auto HD', width: 1920, height: 1080 },
+  '4k': { label: '4K UHD', width: 3840, height: 2160 },
+  '8k': { label: '8K UHD', width: 7680, height: 4320 }
+};
+
+const nftIndexers = [
+  { name: 'Reservoir Ethereum', chain: 'ethereum', url: address => `https://api.reservoir.tools/users/${address}/tokens/v10?limit=40` },
+  { name: 'Reservoir Base', chain: 'base', url: address => `https://api-base.reservoir.tools/users/${address}/tokens/v10?limit=40` },
+  { name: 'Reservoir Polygon', chain: 'polygon', url: address => `https://api-polygon.reservoir.tools/users/${address}/tokens/v10?limit=40` },
+  { name: 'Reservoir Arbitrum', chain: 'arbitrum', url: address => `https://api-arbitrum.reservoir.tools/users/${address}/tokens/v10?limit=40` }
 ];
 
 const skinPresets = {
@@ -337,17 +213,23 @@ const securityProtocols = DreadedGuard.protocols;
 
 const state = {
   activeChain: saved.activeChain || 'base',
-  activeMedia: saved.activeMedia || media[0].id,
+  activeMedia: saved.activeMedia || '',
   filter: saved.filter || 'all',
   marketFilter: saved.marketFilter || 'all',
   search: '',
-  address: saved.address || '',
+  address: '',
   walletLabel: saved.walletLabel || 'Read-only vault',
   hardware: saved.hardware || 'Ready',
   transport: saved.transport || 'USB',
+  playerProfile: saved.playerProfile && playerProfiles[saved.playerProfile] ? saved.playerProfile : 'auto',
   skinId: saved.skinId === 'custom' && saved.customSkin ? 'custom' : skinPresets[saved.skinId] ? saved.skinId : 'dreaded',
   customSkin: saved.customSkin || null,
   skinNotice: '',
+  mediaAssets: [],
+  chainBalances: {},
+  assetStatus: 'idle',
+  assetMessage: 'Connect wallet to index owned media.',
+  indexerSources: [],
   pinned: saved.pinned || [],
   queue: saved.queue || [],
   guardEvents: saved.guardEvents || [],
@@ -371,6 +253,7 @@ function persist() {
     walletLabel: state.walletLabel,
     hardware: state.hardware,
     transport: state.transport,
+    playerProfile: state.playerProfile,
     skinId: state.skinId,
     customSkin: state.customSkin,
     pinned: state.pinned,
@@ -396,12 +279,21 @@ function activeChain() {
   return chains.find(chain => chain.id === state.activeChain) || chains[0];
 }
 
+function chainFromChainId(chainId) {
+  return chains.find(chain => chain.chainId?.toLowerCase() === String(chainId || '').toLowerCase());
+}
+
+function vaultMedia() {
+  return state.address ? state.mediaAssets : [];
+}
+
 function activeMedia() {
-  return media.find(item => item.id === state.activeMedia) || media[0];
+  const items = vaultMedia();
+  return items.find(item => item.id === state.activeMedia) || items[0] || null;
 }
 
 function mediaChain(item) {
-  return chains.find(chain => chain.id === item.chain) || chains[0];
+  return chains.find(chain => chain.id === item?.chain) || activeChain();
 }
 
 function clamp(value, min = 0, max = 255) {
@@ -650,6 +542,176 @@ function titleCase(value) {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
+function formatNativeBalance(value) {
+  const number = Number(value || 0);
+  if (!Number.isFinite(number)) return '0';
+  if (number === 0) return '0';
+  if (number < 0.0001) return '<0.0001';
+  return number.toLocaleString(undefined, { maximumFractionDigits: number < 1 ? 5 : 4 });
+}
+
+function weiHexToEth(hex) {
+  if (typeof hex !== 'string' || !/^0x[0-9a-f]+$/i.test(hex)) return 0;
+  const wei = BigInt(hex);
+  const integer = wei / 1000000000000000000n;
+  const fraction = wei % 1000000000000000000n;
+  return Number(`${integer}.${fraction.toString().padStart(18, '0').slice(0, 8)}`);
+}
+
+async function rpcRequest(chain, method, params) {
+  if (!chain.rpc) throw new Error(`${chain.name} RPC is not configured`);
+  const response = await fetch(chain.rpc, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method, params })
+  });
+  if (!response.ok) throw new Error(`${chain.name} RPC returned ${response.status}`);
+  const payload = await response.json();
+  if (payload.error) throw new Error(payload.error.message || `${chain.name} RPC error`);
+  return payload.result;
+}
+
+async function loadNativeBalances(address) {
+  const entries = await Promise.all(chains.map(async chain => {
+    if (!chain.rpc || !chain.chainId) {
+      return [chain.id, { status: 'unsupported', balance: 0, symbol: chain.symbol }];
+    }
+
+    try {
+      const result = await rpcRequest(chain, 'eth_getBalance', [address, 'latest']);
+      return [chain.id, { status: 'ready', balance: weiHexToEth(result), symbol: chain.symbol }];
+    } catch (error) {
+      return [chain.id, { status: 'error', balance: 0, symbol: chain.symbol, message: error.message }];
+    }
+  }));
+
+  return Object.fromEntries(entries);
+}
+
+function normalizeIpfs(url = '') {
+  if (!url) return '';
+  if (url.startsWith('ipfs://ipfs/')) return `https://ipfs.io/ipfs/${url.slice(12)}`;
+  if (url.startsWith('ipfs://')) return `https://ipfs.io/ipfs/${url.slice(7)}`;
+  if (url.startsWith('ar://')) return `https://arweave.net/${url.slice(5)}`;
+  return url;
+}
+
+function firstString(...values) {
+  return values.flat().find(value => typeof value === 'string' && value.trim()) || '';
+}
+
+function inferMediaType(token = {}) {
+  const url = firstString(token.animation_url, token.animationUrl, token.media, token.image, token.imageUrl).toLowerCase();
+  const mime = firstString(token.mimeType, token.contentType, token.metadata?.mimeType, token.metadata?.contentType).toLowerCase();
+  if (/\bvideo|\.mp4|\.webm|\.mov|\.m3u8/.test(`${mime} ${url}`)) return 'movie';
+  if (/\baudio|\.mp3|\.wav|\.flac|\.ogg/.test(`${mime} ${url}`)) return 'music';
+  return 'photo';
+}
+
+function tokenMediaUrl(token = {}) {
+  const mediaObject = token.media && typeof token.media === 'object' ? token.media : {};
+  return normalizeIpfs(firstString(
+    mediaObject.original,
+    mediaObject.large,
+    mediaObject.small,
+    token.animation_url,
+    token.animationUrl,
+    token.metadata?.animation_url,
+    token.metadata?.animationUrl,
+    token.image,
+    token.imageUrl,
+    token.metadata?.image
+  ));
+}
+
+function tokenImageUrl(token = {}) {
+  const mediaObject = token.media && typeof token.media === 'object' ? token.media : {};
+  return normalizeIpfs(firstString(
+    token.image,
+    token.imageUrl,
+    token.imageSmall,
+    token.metadata?.image,
+    mediaObject.large,
+    mediaObject.small,
+    mediaObject.original,
+    token.collection?.image
+  ));
+}
+
+function reservoirTokenToMedia(row = {}, source) {
+  const token = row.token || row;
+  const collection = token.collection || row.collection || {};
+  const chain = source.chain;
+  const tokenId = token.tokenId || token.id || token.token_id || 'unknown';
+  const contract = token.contract || token.contractAddress || token.contract_address || collection.id || 'unknown';
+  const type = inferMediaType(token);
+  const image = tokenImageUrl(token);
+  const mediaUrl = tokenMediaUrl(token);
+
+  return {
+    id: `${chain}:${contract}:${tokenId}`,
+    title: token.name || collection.name || `Token ${tokenId}`,
+    creator: collection.name || token.creator || 'Unknown collection',
+    type,
+    chain,
+    market: source.name,
+    runtime: type === 'photo' ? 'Owned image' : 'Owned media',
+    duration: type === 'music' ? 180 : type === 'movie' ? 600 : 120,
+    token: `${String(contract).slice(0, 6)}...${String(contract).slice(-4)} #${tokenId}`,
+    license: row.ownership?.tokenCount ? `${row.ownership.tokenCount} owned` : 'Owned NFT',
+    price: 0,
+    format: type === 'movie' ? '8K capable stream' : type === 'music' ? 'Wallet audio' : 'High-res image',
+    cover: image || 'assets/wallet/media-vault-empty-state-1200x800.png',
+    mediaUrl,
+    contract,
+    tokenId,
+    colors: ['#10151d', '#d9a441', '#45b6bd']
+  };
+}
+
+async function loadNftMedia(address) {
+  const results = await Promise.all(nftIndexers.map(async source => {
+    try {
+      const response = await fetch(source.url(address), { headers: { accept: 'application/json' } });
+      if (!response.ok) throw new Error(`${response.status}`);
+      const payload = await response.json();
+      const rows = Array.isArray(payload.tokens) ? payload.tokens : Array.isArray(payload.nfts) ? payload.nfts : [];
+      return { source: source.name, ok: true, assets: rows.map(row => reservoirTokenToMedia(row, source)) };
+    } catch (error) {
+      return { source: source.name, ok: false, error: error.message, assets: [] };
+    }
+  }));
+  const assets = results.flatMap(result => result.assets);
+  const sources = results.map(({ source, ok, error }) => ({ source, ok, error }));
+  return { assets, sources };
+}
+
+async function refreshWalletAssets() {
+  if (!state.address) return;
+
+  state.assetStatus = 'loading';
+  state.assetMessage = 'Indexing wallet balances and owned media...';
+  state.mediaAssets = [];
+  renderAll();
+
+  const [balances, indexed] = await Promise.all([
+    loadNativeBalances(state.address),
+    loadNftMedia(state.address)
+  ]);
+
+  state.chainBalances = balances;
+  state.mediaAssets = indexed.assets;
+  state.indexerSources = indexed.sources;
+  state.assetStatus = indexed.assets.length ? 'ready' : 'empty';
+  state.assetMessage = indexed.assets.length
+    ? `${indexed.assets.length} owned media assets indexed.`
+    : 'No owned media NFTs returned by the public indexers. Native balances are still shown.';
+  state.activeMedia = indexed.assets.some(item => item.id === state.activeMedia) ? state.activeMedia : indexed.assets[0]?.id || '';
+  state.elapsed = 0;
+  persist();
+  renderAll();
+}
+
 function marketFromUrl(url) {
   return markets.find(market => market.url === url);
 }
@@ -782,23 +844,28 @@ function ensureSecurity(tx) {
 }
 
 function renderChains() {
-  $('#portfolioValue').textContent = usd(chains.reduce((sum, chain) => sum + chain.usd, 0));
+  const ownedMedia = vaultMedia();
+  const readyBalances = Object.values(state.chainBalances).filter(item => item.status === 'ready');
+  $('#portfolioValue').textContent = state.address ? `${readyBalances.length || 0} chains` : 'Connect wallet';
   $('#walletAddress').textContent = state.address ? shortAddress(state.address) : state.walletLabel;
-  $('#chainCount').textContent = `${chains.length} indexed`;
-  $('#networkStatus').textContent = state.address ? `${shortAddress(state.address)} on ${activeChain().name}` : activeChain().name;
+  $('#chainCount').textContent = state.address ? `${ownedMedia.length} media` : '0 indexed';
+  $('#networkStatus').textContent = state.address ? `${shortAddress(state.address)} on ${activeChain().name}` : 'Wallet offline';
   $('#hardwareState').textContent = state.hardware;
   $('#transportMode').textContent = state.transport;
+  const connectButton = $('#connectWallet');
+  connectButton.textContent = state.address ? 'Connected' : 'Connect Wallet';
+  connectButton.classList.toggle('connected', Boolean(state.address));
 
   $('#chainList').innerHTML = chains.map(chain => `
     <button class="chain-button ${chain.id === state.activeChain ? 'active' : ''}" type="button" data-chain="${chain.id}" style="--chain-color: ${chain.color}">
       <span class="chain-dot" aria-hidden="true"></span>
       <span>
         <span class="chain-name">${chain.name}</span>
-        <span class="chain-symbol">${chain.balance} ${chain.symbol} - ${chain.gas}</span>
+        <span class="chain-symbol">${state.address ? `${formatNativeBalance(state.chainBalances[chain.id]?.balance)} ${chain.symbol}` : 'Connect wallet'} - ${state.chainBalances[chain.id]?.status || 'idle'}</span>
       </span>
       <span>
-        <span class="chain-value">${usd(chain.usd)}</span>
-        <span class="chain-assets">${chain.assets} media</span>
+        <span class="chain-value">${state.address ? (state.chainBalances[chain.id]?.status === 'error' ? 'Unavailable' : 'Native') : 'Offline'}</span>
+        <span class="chain-assets">${ownedMedia.filter(item => item.chain === chain.id).length} media</span>
       </span>
     </button>
   `).join('');
@@ -828,7 +895,7 @@ function renderFilters() {
 
 function filteredMedia() {
   const query = state.search.trim().toLowerCase();
-  return media.filter(item => {
+  return vaultMedia().filter(item => {
     const matchesType = state.filter === 'all' || item.type === state.filter;
     const haystack = [item.title, item.creator, item.type, item.market, mediaChain(item).name, item.token].join(' ').toLowerCase();
     return matchesType && (!query || haystack.includes(query));
@@ -837,6 +904,11 @@ function filteredMedia() {
 
 function renderMediaGrid() {
   const items = filteredMedia();
+  const emptyMessage = !state.address
+    ? 'Connect wallet to index owned movies, music, photos, and NFT media.'
+    : state.assetStatus === 'loading'
+      ? state.assetMessage
+      : state.assetMessage || 'No owned media NFTs were returned by the configured indexers.';
   $('#mediaGrid').innerHTML = items.map(item => {
     const chain = mediaChain(item);
     const pinned = state.pinned.includes(item.id);
@@ -848,7 +920,7 @@ function renderMediaGrid() {
         <div class="media-body">
           <div class="media-row">
             <h3 class="media-title">${item.title}</h3>
-            <span class="media-price">${item.price} ${chain.symbol}</span>
+            <span class="media-price">Owned</span>
           </div>
           <div class="media-meta">${item.creator} - ${chain.name} - ${item.market}</div>
           <div class="mini-actions">
@@ -858,7 +930,7 @@ function renderMediaGrid() {
         </div>
       </article>
     `;
-  }).join('') || '<div class="empty-state">No media matched this vault.</div>';
+  }).join('') || `<div class="empty-state">${emptyMessage}</div>`;
 
   $$('[data-play]').forEach(button => {
     button.addEventListener('click', () => {
@@ -875,6 +947,31 @@ function renderMediaGrid() {
 
 function renderPlayer() {
   const item = activeMedia();
+  const canvas = $('#playerCanvas');
+  configurePlayerCanvas(canvas);
+
+  if (!item) {
+    $('#activeMediaType').textContent = state.address ? 'Vault' : 'Offline';
+    $('#activeMediaChain').textContent = activeChain().name;
+    $('#activeMarket').textContent = state.address ? 'Wallet indexed' : 'Wallet required';
+    $('#activeTitle').textContent = state.address ? 'No media selected' : 'Connect wallet';
+    $('#activeCreator').textContent = state.address ? state.assetMessage : 'Owned assets will appear after connection.';
+    $('#durationTime').textContent = '0:00';
+    $('#elapsedTime').textContent = '0:00';
+    $('#progress').value = '0';
+    $('#playPause').textContent = 'Play';
+    $('#pinMedia').textContent = 'Vault';
+    $('#trackMeta').innerHTML = [
+      ['Player', playerProfiles[state.playerProfile].label],
+      ['Max output', '7680 x 4320'],
+      ['Source', state.assetStatus === 'loading' ? 'Indexing' : 'None'],
+      ['Security', 'Guard active']
+    ].map(([label, value]) => `<div><span>${label}</span><strong>${value}</strong></div>`).join('');
+    drawEmptyPlayer(canvas);
+    renderMediaGrid();
+    return;
+  }
+
   const chain = mediaChain(item);
   $('#activeMediaType').textContent = titleCase(item.type);
   $('#activeMediaChain').textContent = chain.name;
@@ -890,15 +987,43 @@ function renderPlayer() {
   $('#trackMeta').innerHTML = [
     ['Vault ID', item.token],
     ['Format', item.format],
-    ['License', item.license],
-    ['Network', `${chain.name} - ${chain.health}`]
+    ['Player', playerProfiles[state.playerProfile].label],
+    ['Network', `${chain.name} - ${state.chainBalances[chain.id]?.status || 'indexed'}`]
   ].map(([label, value]) => `<div><span>${label}</span><strong>${value}</strong></div>`).join('');
 
-  drawCover($('#playerCanvas'), item, state.elapsed, false);
+  drawCover(canvas, item, state.elapsed, false);
   renderMediaGrid();
 }
 
 function renderMarkets() {
+  if (!state.address) {
+    $('#marketList').innerHTML = '<div class="empty-state">Connect wallet to activate NFT and media indexers.</div>';
+    return;
+  }
+
+  const sourceRows = state.indexerSources.length
+    ? state.indexerSources
+    : nftIndexers.map(source => ({ source: source.name, ok: state.assetStatus === 'loading', error: state.assetStatus === 'loading' ? 'Indexing' : 'Pending' }));
+
+  $('#marketList').innerHTML = sourceRows.map(source => `
+    <article class="market-card indexer-card">
+      <div class="market-card-header">
+        <div>
+          <div class="market-name">${source.source}</div>
+          <div class="market-meta">Wallet media indexer</div>
+        </div>
+        <span class="pill ${source.ok ? '' : 'hold'}">${source.ok ? 'Online' : 'Limited'}</span>
+      </div>
+      <div class="market-stats">
+        <div><span>Status</span><strong>${source.ok ? 'Synced' : 'Unavailable'}</strong></div>
+        <div><span>Mode</span><strong>Read-only</strong></div>
+        <div><span>Assets</span><strong>${vaultMedia().filter(item => item.market === source.source).length}</strong></div>
+      </div>
+      <div class="empty-state compact">${source.ok ? 'Indexer returned wallet-owned media metadata.' : `Indexer did not return metadata${source.error ? ` (${source.error})` : ''}.`}</div>
+    </article>
+  `).join('');
+  return;
+
   const items = markets.filter(market => state.marketFilter === 'all' || market.category === state.marketFilter);
   $('#marketList').innerHTML = items.map(market => `
     <article class="market-card">
@@ -924,7 +1049,7 @@ function renderMarkets() {
 
   $$('[data-market-route]').forEach(button => {
     button.addEventListener('click', () => {
-      const target = media.find(item => item.market === button.dataset.marketRoute);
+      const target = vaultMedia().find(item => item.market === button.dataset.marketRoute);
       if (target) loadMedia(target.id);
       queueRoute(button.dataset.marketRoute);
     });
@@ -1023,6 +1148,43 @@ function renderQueue() {
   });
 }
 
+function configurePlayerCanvas(canvas) {
+  if (!canvas) return;
+  const profile = playerProfiles[state.playerProfile] || playerProfiles.auto;
+  if (canvas.width !== profile.width) canvas.width = profile.width;
+  if (canvas.height !== profile.height) canvas.height = profile.height;
+  canvas.dataset.maxResolution = `${playerProfiles['8k'].width}x${playerProfiles['8k'].height}`;
+  canvas.dataset.activeResolution = `${profile.width}x${profile.height}`;
+}
+
+function drawEmptyPlayer(canvas) {
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const { width, height } = canvas;
+  ctx.clearRect(0, 0, width, height);
+  const gradient = ctx.createLinearGradient(0, 0, width, height);
+  gradient.addColorStop(0, '#0d0d0f');
+  gradient.addColorStop(0.55, activeSkin().panel);
+  gradient.addColorStop(1, activeSkin().accent);
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, width, height);
+
+  ctx.globalAlpha = 0.18;
+  ctx.fillStyle = activeSkin().glow;
+  ctx.fillRect(width * 0.08, height * 0.18, width * 0.84, height * 0.04);
+  ctx.fillRect(width * 0.08, height * 0.78, width * 0.84, height * 0.04);
+  ctx.globalAlpha = 1;
+
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.46)';
+  ctx.fillRect(0, height * 0.68, width, height * 0.32);
+  ctx.fillStyle = '#fffaf5';
+  ctx.font = `${Math.max(44, Math.round(width * 0.035))}px Inter, sans-serif`;
+  ctx.fillText(state.address ? 'No indexed media selected' : 'Connect wallet to index media', width * 0.06, height * 0.78, width * 0.86);
+  ctx.fillStyle = 'rgba(255, 250, 245, 0.72)';
+  ctx.font = `${Math.max(24, Math.round(width * 0.018))}px Inter, sans-serif`;
+  ctx.fillText(playerProfiles[state.playerProfile].label + ' player ready', width * 0.06, height * 0.85, width * 0.86);
+}
+
 function drawCover(canvas, item, elapsed = 0, mini = false) {
   if (!canvas || !item) return;
   const ctx = canvas.getContext('2d');
@@ -1119,7 +1281,7 @@ function drawCover(canvas, item, elapsed = 0, mini = false) {
 }
 
 function loadMedia(id) {
-  const next = media.find(item => item.id === id);
+  const next = vaultMedia().find(item => item.id === id);
   if (!next) return;
   stopAudio();
   state.activeMedia = next.id;
@@ -1140,6 +1302,7 @@ function togglePlay() {
 
 function startPlayback() {
   const item = activeMedia();
+  if (!item) return;
   state.playing = true;
   state.startedAt = performance.now() - state.elapsed * 1000;
   if (item.type === 'music') startAudio();
@@ -1159,12 +1322,17 @@ function pausePlayback() {
 function currentElapsed() {
   if (!state.playing) return state.elapsed;
   const item = activeMedia();
+  if (!item) return 0;
   return Math.min(item.duration, (performance.now() - state.startedAt) / 1000);
 }
 
 function animate() {
   state.elapsed = currentElapsed();
   const item = activeMedia();
+  if (!item) {
+    pausePlayback();
+    return;
+  }
   if (state.elapsed >= item.duration) {
     nextMedia();
     return;
@@ -1207,16 +1375,21 @@ function stopAudio() {
 }
 
 function nextMedia() {
-  const index = media.findIndex(item => item.id === state.activeMedia);
-  loadMedia(media[(index + 1) % media.length].id);
+  const items = vaultMedia();
+  if (!items.length) return;
+  const index = items.findIndex(item => item.id === state.activeMedia);
+  loadMedia(items[(index + 1) % items.length].id);
 }
 
 function previousMedia() {
-  const index = media.findIndex(item => item.id === state.activeMedia);
-  loadMedia(media[(index - 1 + media.length) % media.length].id);
+  const items = vaultMedia();
+  if (!items.length) return;
+  const index = items.findIndex(item => item.id === state.activeMedia);
+  loadMedia(items[(index - 1 + items.length) % items.length].id);
 }
 
 function togglePinned(id = state.activeMedia) {
+  if (!id) return;
   if (state.pinned.includes(id)) {
     state.pinned = state.pinned.filter(item => item !== id);
   } else {
@@ -1255,8 +1428,10 @@ async function selectChain(id) {
 
 async function connectWallet() {
   if (!window.ethereum) {
-    state.walletLabel = 'Demo vault active';
+    state.walletLabel = 'Wallet provider needed';
     state.hardware = 'Provider needed';
+    state.assetStatus = 'idle';
+    state.assetMessage = 'Install or enable a browser wallet to index owned assets.';
     persist();
     renderAll();
     return;
@@ -1267,12 +1442,40 @@ async function connectWallet() {
     state.address = accounts[0] || '';
     state.walletLabel = state.address ? shortAddress(state.address) : 'Read-only vault';
     state.hardware = 'Wallet linked';
+    const providerChain = chainFromChainId(await window.ethereum.request({ method: 'eth_chainId' }).catch(() => ''));
+    if (providerChain) state.activeChain = providerChain.id;
     persist();
     renderAll();
+    if (state.address) await refreshWalletAssets();
   } catch (error) {
     state.hardware = 'Connection declined';
     renderChains();
   }
+}
+
+async function hydrateConnectedWallet() {
+  if (!window.ethereum) return;
+  const accounts = await window.ethereum.request({ method: 'eth_accounts' }).catch(() => []);
+  if (!accounts[0]) {
+    state.address = '';
+    state.walletLabel = 'Read-only vault';
+    state.mediaAssets = [];
+    state.chainBalances = {};
+    state.assetStatus = 'idle';
+    state.assetMessage = 'Connect wallet to index owned media.';
+    persist();
+    renderAll();
+    return;
+  }
+
+  state.address = accounts[0];
+  state.walletLabel = shortAddress(state.address);
+  state.hardware = 'Wallet linked';
+  const providerChain = chainFromChainId(await window.ethereum.request({ method: 'eth_chainId' }).catch(() => ''));
+  if (providerChain) state.activeChain = providerChain.id;
+  persist();
+  renderAll();
+  refreshWalletAssets();
 }
 
 async function connectHardware() {
@@ -1296,6 +1499,11 @@ async function connectHardware() {
 
 function queueCollect() {
   const item = activeMedia();
+  if (!item) {
+    state.hardware = 'No media selected';
+    renderAll();
+    return;
+  }
   const chain = mediaChain(item);
   const registry = trustedMarkets[item.market];
   const tx = buildTransaction({
@@ -1304,15 +1512,15 @@ function queueCollect() {
     chain: chain.name,
     chainId: chain.id,
     market: item.market,
-    amount: `${item.price} ${chain.symbol}`,
-    amountValue: item.price,
+    amount: 'Owned NFT',
+    amountValue: 0,
     symbol: chain.symbol,
     recipient: registry?.recipient || '',
     spender: registry?.recipient || '',
-    method: 'collectMedia',
-    approval: 'exact',
+    method: 'openMedia',
+    approval: 'none',
     origin: `https://${registry?.domain || 'unknown.example'}/collect/${item.id}`,
-    readOnly: false,
+    readOnly: true,
     token: item.token
   });
   enqueueTransaction(tx);
@@ -1430,6 +1638,11 @@ function bindEvents() {
     if (file) generateSkinFromFile(file);
     event.target.value = '';
   });
+  $('#qualitySelect')?.addEventListener('change', event => {
+    state.playerProfile = playerProfiles[event.target.value] ? event.target.value : 'auto';
+    persist();
+    renderPlayer();
+  });
   $('#progress').addEventListener('input', event => {
     const item = activeMedia();
     state.elapsed = item.duration * (Number(event.target.value) / 1000);
@@ -1446,9 +1659,21 @@ function bindEvents() {
     window.ethereum.on?.('accountsChanged', accounts => {
       state.address = accounts[0] || '';
       state.walletLabel = state.address ? shortAddress(state.address) : 'Read-only vault';
+      state.mediaAssets = [];
+      state.chainBalances = {};
+      state.assetStatus = state.address ? 'loading' : 'idle';
+      state.assetMessage = state.address ? 'Indexing wallet balances and owned media...' : 'Connect wallet to index owned media.';
+      persist();
+      renderAll();
+      if (state.address) refreshWalletAssets();
+    });
+    window.ethereum.on?.('chainChanged', chainId => {
+      const next = chainFromChainId(chainId);
+      if (next) state.activeChain = next.id;
       persist();
       renderAll();
     });
+    hydrateConnectedWallet();
   }
 }
 
@@ -1481,6 +1706,7 @@ function renderAll() {
   renderQueue();
   $('#marketFilter').value = state.marketFilter;
   $('#searchMedia').value = state.search;
+  if ($('#qualitySelect')) $('#qualitySelect').value = state.playerProfile;
   setTransport(state.transport);
 }
 

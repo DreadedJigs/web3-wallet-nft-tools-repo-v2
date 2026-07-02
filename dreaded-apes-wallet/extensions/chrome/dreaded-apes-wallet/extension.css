@@ -48,6 +48,16 @@ h1 {
   grid-template-columns: 1fr;
 }
 
+.player-stage {
+  min-height: auto;
+}
+
+.player-copy {
+  position: static;
+  width: auto;
+  border-radius: 0;
+}
+
 .media-screen {
   min-height: 240px;
 }

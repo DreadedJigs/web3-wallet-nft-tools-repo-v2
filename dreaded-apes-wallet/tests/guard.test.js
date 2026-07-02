@@ -155,3 +155,61 @@ test('background monitor blocks eth_sign raw signature requests', () => {
   assert.equal(event.security.decision, 'block');
   assert.ok(event.security.findings.some(finding => finding.code === 'DANGEROUS_METHOD'));
 });
+
+test('background monitor holds decoded NFT transfer requests for review', () => {
+  const monitor = Guard.createBackgroundMonitor({
+    guard: createTestGuard(),
+    getContext: () => ({ walletAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' }),
+    getIntentDefaults: () => ({
+      source: 'Zora',
+      chainId: 'base',
+      symbol: 'ETH',
+      origin: 'https://zora.co'
+    })
+  });
+
+  const from = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+  const to = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+  const tokenId = '000000000000000000000000000000000000000000000000000000000000007b';
+  const data = `0x42842e0e000000000000000000000000${from}000000000000000000000000${to}${tokenId}`;
+
+  const event = monitor.inspectRequest({
+    method: 'eth_sendTransaction',
+    params: [{ to: '0x1111111111111111111111111111111111111111', data }]
+  });
+
+  assert.equal(event.security.decision, 'hold');
+  assert.ok(event.security.findings.some(finding => finding.code === 'NFT_TRANSFER'));
+});
+
+test('background monitor blocks opaque raw transactions', async () => {
+  let providerCalled = false;
+  const provider = {
+    async request() {
+      providerCalled = true;
+      return 'sent';
+    }
+  };
+
+  Guard.createBackgroundMonitor({
+    guard: createTestGuard(),
+    provider,
+    getContext: () => ({ walletAddress: '0xabc' }),
+    getIntentDefaults: () => ({
+      source: 'Zora',
+      chainId: 'base',
+      symbol: 'ETH',
+      origin: 'https://zora.co'
+    })
+  });
+
+  await assert.rejects(
+    provider.request({
+      method: 'eth_sendRawTransaction',
+      params: ['0xf86c808504a817c80082520894ffffffffffffffffffffffffffffffffffffffff880de0b6b3a76400008025a0']
+    }),
+    /Blocked by Dreaded Guard/
+  );
+
+  assert.equal(providerCalled, false);
+});

@@ -108,6 +108,12 @@ button:disabled {
   cursor: not-allowed;
 }
 
+#connectWallet.connected {
+  border-color: rgba(85, 185, 120, 0.72);
+  background: linear-gradient(135deg, #2fb765, #55b978);
+  color: #06140b;
+}
+
 input,
 select {
   width: 100%;
@@ -261,7 +267,9 @@ a.ghost-button:hover {
   grid-template-columns: 300px minmax(0, 1.58fr) minmax(330px, 0.86fr);
   grid-template-areas:
     "rail player markets"
+    "rail player signing"
     "rail library signing";
+  grid-template-rows: minmax(680px, calc(100vh - 122px)) auto auto;
   gap: 1rem;
   width: min(1680px, 100%);
   margin: 0 auto;
@@ -560,7 +568,9 @@ a.ghost-button:hover {
 
 .player-stage {
   grid-area: player;
+  position: relative;
   overflow: hidden;
+  min-height: calc(100vh - 122px);
   background:
     linear-gradient(180deg, rgba(var(--skin-panel-rgb), 0.72), rgba(var(--skin-panel-rgb), 0.96)),
     url("assets/wallet/wallet-hero-bg-1600x900.png") center / cover;
@@ -568,13 +578,13 @@ a.ghost-button:hover {
 
 .player-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
-  min-height: 520px;
+  grid-template-columns: minmax(0, 1fr);
+  min-height: inherit;
 }
 
 .media-screen {
   position: relative;
-  min-height: 520px;
+  min-height: inherit;
   background:
     radial-gradient(circle at 22% 12%, rgba(var(--skin-glow-rgb), 0.18), transparent 22rem),
     linear-gradient(180deg, rgba(9, 9, 11, 0.08), rgba(9, 9, 11, 0.46)),
@@ -611,13 +621,23 @@ a.ghost-button:hover {
 }
 
 .player-copy {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 3;
   display: grid;
   align-content: space-between;
   gap: 1.4rem;
+  width: min(390px, calc(100% - 2rem));
   padding: 1.2rem;
+  border: 1px solid rgba(245, 241, 232, 0.12);
+  border-radius: 8px;
   background:
-    linear-gradient(180deg, rgba(var(--skin-panel-rgb), 0.58), rgba(var(--skin-panel-rgb), 0.94)),
+    linear-gradient(180deg, rgba(var(--skin-panel-rgb), 0.76), rgba(var(--skin-panel-rgb), 0.96)),
     url("assets/core/dreaded-apes-logo-1024.png") 118% -16% / 190px auto no-repeat;
+  box-shadow: 0 24px 68px rgba(0, 0, 0, 0.36);
+  backdrop-filter: blur(18px);
 }
 
 .player-copy h2 {
@@ -653,6 +673,19 @@ a.ghost-button:hover {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 0.9rem;
+}
+
+.quality-control {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.quality-control select {
+  min-height: 38px;
+  padding: 0.55rem 0.66rem;
 }
 
 .progress-wrap {
@@ -1137,6 +1170,7 @@ input[type="range"] {
       "rail library"
       "rail markets"
       "rail signing";
+    grid-template-rows: auto;
   }
 }
 
@@ -1178,6 +1212,16 @@ input[type="range"] {
 
   .player-grid {
     grid-template-columns: 1fr;
+  }
+
+  .player-stage {
+    min-height: auto;
+  }
+
+  .player-copy {
+    position: static;
+    width: auto;
+    border-radius: 0;
   }
 
   .media-screen {
