@@ -28,10 +28,10 @@ Setup:
 4. Set **Source** to **GitHub Actions**.
 5. Push to `main` or run the Dreaded Apes Wallet workflow manually from the Actions tab.
 
-Typical URL:
+Live URL:
 
 ```text
-https://YOUR-USERNAME.github.io/YOUR-REPO/
+https://dreadedjigs.github.io/web3-wallet-nft-tools-repo-v2/
 ```
 
 Use that Pages URL in the Carrd iframe.
@@ -85,13 +85,13 @@ npm pack ./packages/dreaded-guard
 The public install page is:
 
 ```text
-/install/
+https://dreadedjigs.github.io/web3-wallet-nft-tools-repo-v2/install/
 ```
 
 It offers:
 
 - PWA install prompt for supported browsers.
-- Browser extension download at `/downloads/dreaded-apes-wallet-extension.zip`.
+- Browser extension download at `https://dreadedjigs.github.io/web3-wallet-nft-tools-repo-v2/downloads/dreaded-apes-wallet-extension.zip`.
 
 Refresh the extension ZIP after app or guard changes:
 

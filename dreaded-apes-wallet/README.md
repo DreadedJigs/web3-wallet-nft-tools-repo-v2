@@ -56,10 +56,10 @@ This repo includes a root GitHub Actions workflow that deploys `dreaded-apes-wal
 3. Set **Source** to **GitHub Actions**.
 4. Push to `main` or run the workflow manually.
 
-Your Pages URL will usually look like:
+Live Pages URL:
 
 ```text
-https://YOUR-USERNAME.github.io/YOUR-REPO/
+https://dreadedjigs.github.io/web3-wallet-nft-tools-repo-v2/
 ```
 
 Use that URL as the iframe source in Carrd.
