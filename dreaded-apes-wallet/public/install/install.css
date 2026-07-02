@@ -1,0 +1,48 @@
+.install-shell {
+  display: grid;
+  gap: 1rem;
+  width: min(1120px, 100%);
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.install-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 240px);
+  align-items: center;
+  gap: 1rem;
+  padding: 1.2rem;
+}
+
+.install-hero h2,
+.install-option h2 {
+  font-size: 1.45rem;
+  margin-bottom: 0.5rem;
+}
+
+.install-note {
+  grid-column: 1 / -1;
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.install-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.install-option {
+  display: grid;
+  align-content: space-between;
+  gap: 0.8rem;
+  padding: 1rem;
+}
+
+@media (max-width: 760px) {
+  .install-hero,
+  .install-grid {
+    grid-template-columns: 1fr;
+  }
+}

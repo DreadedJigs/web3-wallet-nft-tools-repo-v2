@@ -1,0 +1,32 @@
+{
+  "trustedSources": {
+    "Zora": {
+      "domain": "zora.co",
+      "recipient": "0x1111111111111111111111111111111111111111",
+      "chains": ["base", "ethereum"],
+      "caps": {
+        "ETH": 0.35
+      }
+    },
+    "Sound": {
+      "domain": "sound.xyz",
+      "recipient": "0x2222222222222222222222222222222222222222",
+      "chains": ["ethereum"],
+      "caps": {
+        "ETH": 0.2
+      }
+    }
+  },
+  "blockedAddresses": [
+    "0x0000000000000000000000000000000000000000",
+    "0x000000000000000000000000000000000000dEaD"
+  ],
+  "highRiskMethods": [
+    "setApprovalForAll",
+    "permit",
+    "permit2",
+    "delegatecall",
+    "eth_sign"
+  ],
+  "holdThreshold": 45
+}

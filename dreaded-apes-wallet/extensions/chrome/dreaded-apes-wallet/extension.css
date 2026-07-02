@@ -1,0 +1,61 @@
+body {
+  width: 420px;
+  min-height: 640px;
+  overflow-x: hidden;
+}
+
+.appbar {
+  position: static;
+  padding: 0.8rem;
+}
+
+.brand-mark {
+  width: 42px;
+  height: 42px;
+}
+
+h1 {
+  font-size: 1.2rem;
+}
+
+.app-actions {
+  display: none;
+}
+
+.wallet-shell {
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "rail"
+    "player"
+    "library"
+    "markets"
+    "signing";
+  padding: 0.7rem;
+}
+
+.rail {
+  position: static;
+  min-height: 0;
+}
+
+.player-grid,
+.track-meta,
+.player-controls,
+.market-stats,
+.security-summary,
+.protocol-row,
+.tx-detail {
+  grid-template-columns: 1fr;
+}
+
+.media-screen {
+  min-height: 240px;
+}
+
+.player-copy h2 {
+  font-size: 1.45rem;
+}
+
+.media-grid {
+  grid-template-columns: 1fr;
+}

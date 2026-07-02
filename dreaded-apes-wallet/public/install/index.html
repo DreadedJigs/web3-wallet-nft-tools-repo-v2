@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Install Dreaded Apes Wallet</title>
+  <link rel="manifest" href="../manifest.webmanifest" />
+  <link rel="icon" href="../icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="../styles.css" />
+  <link rel="stylesheet" href="install.css" />
+</head>
+<body>
+  <header class="appbar">
+    <div class="brand-lockup">
+      <span class="brand-mark" aria-hidden="true">DW</span>
+      <div>
+        <p class="eyebrow">Download</p>
+        <h1>Install Dreaded Apes Wallet</h1>
+      </div>
+    </div>
+    <div class="app-actions">
+      <a class="ghost-button" href="../">Open Vault</a>
+      <a class="ghost-button" href="../guard/">Guard SDK</a>
+    </div>
+  </header>
+
+  <main class="install-shell">
+    <section class="surface install-hero">
+      <div>
+        <p class="eyebrow">Recommended</p>
+        <h2>Install as a web app</h2>
+        <p class="muted">Runs from the user's device with offline app-shell caching, a dedicated app window, and no extension-store review delay.</p>
+      </div>
+      <button id="installPwa" type="button">Install Web App</button>
+      <p class="install-note" id="installStatus">If the install prompt is not available, use your browser menu and choose Install app.</p>
+    </section>
+
+    <section class="install-grid">
+      <article class="surface install-option">
+        <div>
+          <p class="eyebrow">Browser Extension</p>
+          <h2>Chrome / Edge package</h2>
+          <p class="muted">Download the extension package for a MetaMask-style browser install. Users unzip it and load it in extension developer mode.</p>
+        </div>
+        <a class="ghost-button full-width" href="../downloads/dreaded-apes-wallet-extension.zip" download>Download ZIP</a>
+        <a class="ghost-button full-width" href="../downloads/extension-install.txt">Install Steps</a>
+      </article>
+
+      <article class="surface install-option">
+        <div>
+          <p class="eyebrow">Security Layer</p>
+          <h2>Dreaded Guard SDK</h2>
+          <p class="muted">Wallet teams can embed the standalone transaction guard without installing the full media vault.</p>
+        </div>
+        <a class="ghost-button full-width" href="../guard/v1/dreaded-guard.js">Open SDK</a>
+        <a class="ghost-button full-width" href="../guard/">Guard Demo</a>
+      </article>
+    </section>
+  </main>
+
+  <script src="install.js"></script>
+</body>
+</html>

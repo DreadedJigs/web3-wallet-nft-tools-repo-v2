@@ -1,0 +1,30 @@
+{
+  "name": "dreaded-apes-wallet",
+  "version": "1.0.0",
+  "description": "Dreaded Apes Wallet, an installable multichain media vault with a standalone transaction guard.",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "check": "node --check server.js && node --check public/app.js && node --check public/sw.js && node --check public/install/install.js && node --check public/guard/dreaded-guard.js && node --check public/guard/demo.js && node --check scripts/sync-guard-package.js && node --check scripts/build-extension.js",
+    "build:extension": "node scripts/build-extension.js",
+    "sync:guard": "node scripts/sync-guard-package.js",
+    "test": "node --test tests/guard.test.js",
+    "serve": "node server.js"
+  },
+  "keywords": [
+    "dreaded-apes",
+    "media-vault",
+    "web3",
+    "wallet",
+    "multichain",
+    "media-player",
+    "hardware-wallet",
+    "transaction-security",
+    "wallet-sdk",
+    "browser-extension",
+    "pwa"
+  ],
+  "license": "MIT"
+}

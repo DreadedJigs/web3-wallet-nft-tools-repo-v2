@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Dreaded Apes Wallet is a multichain media vault and player for movies, music, and photos." />
+  <meta name="theme-color" content="#d64d4d" />
+  <meta property="og:title" content="Dreaded Apes Wallet" />
+  <meta property="og:description" content="A multichain media vault and player for movies, music, and photos." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://DreadedApes.carrd.co/" />
+  <title>Dreaded Apes Wallet</title>
+  <link rel="canonical" href="https://DreadedApes.carrd.co/" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="appbar">
+    <div class="brand-lockup">
+      <span class="brand-mark" aria-hidden="true">DW</span>
+      <div>
+        <p class="eyebrow">Media Vault</p>
+        <h1>Dreaded Apes Wallet</h1>
+      </div>
+    </div>
+    <div class="app-actions">
+      <div class="status-chip" id="networkStatus">Vault offline</div>
+      <a class="ghost-button" href="install/">Install</a>
+      <a class="ghost-button" href="guard/">Guard SDK</a>
+      <button class="ghost-button" id="connectHardware" type="button">Device</button>
+      <button id="connectWallet" type="button">Connect Wallet</button>
+    </div>
+  </header>
+
+  <main class="wallet-shell">
+    <aside class="rail surface" aria-label="Wallet overview">
+      <section class="balance-block">
+        <p class="label">Vault Index</p>
+        <strong id="portfolioValue">$0.00</strong>
+        <span id="walletAddress">Read-only vault</span>
+      </section>
+
+      <section>
+        <div class="section-title">
+          <h2>Networks</h2>
+          <span id="chainCount">0 live</span>
+        </div>
+        <div class="chain-list" id="chainList"></div>
+      </section>
+
+      <section>
+        <div class="section-title">
+          <h2>Device Policy</h2>
+          <span id="hardwareState">Ready</span>
+        </div>
+        <div class="policy-list">
+          <div><span>Seed phrase</span><strong>Never requested</strong></div>
+          <div><span>Blind signing</span><strong>Off</strong></div>
+          <div><span>Vault actions</span><strong>Device required</strong></div>
+          <div><span>Transport</span><strong id="transportMode">USB, BLE, QR</strong></div>
+        </div>
+      </section>
+
+      <section class="install-card">
+        <div>
+          <p class="label">Install</p>
+          <h2>Run it like an app</h2>
+        </div>
+        <button id="installApp" class="ghost-button full-width" type="button">Install App</button>
+        <a class="ghost-button full-width" href="downloads/dreaded-apes-wallet-extension.zip" download>Download Extension</a>
+      </section>
+    </aside>
+
+    <section class="player-stage surface" aria-label="Media player">
+      <div class="player-grid">
+        <div class="media-screen">
+          <canvas id="playerCanvas" width="960" height="600"></canvas>
+          <div class="screen-badges">
+            <span id="activeMediaType">Music</span>
+            <span id="activeMediaChain">Ethereum</span>
+          </div>
+        </div>
+
+        <div class="player-copy">
+          <div>
+            <p class="eyebrow" id="activeMarket">Zora</p>
+            <h2 id="activeTitle">Loading vault</h2>
+            <p id="activeCreator" class="muted">Creator</p>
+          </div>
+
+          <div class="track-meta" id="trackMeta"></div>
+
+          <div class="progress-wrap">
+            <div class="time-row">
+              <span id="elapsedTime">0:00</span>
+              <span id="durationTime">0:00</span>
+            </div>
+            <input id="progress" type="range" min="0" max="1000" value="0" aria-label="Playback position" />
+          </div>
+
+          <div class="player-controls">
+            <button class="icon-button" id="prevTrack" type="button" aria-label="Previous">Prev</button>
+            <button class="play-button" id="playPause" type="button">Play</button>
+            <button class="icon-button" id="nextTrack" type="button" aria-label="Next">Next</button>
+            <button class="ghost-button" id="pinMedia" type="button">Vault</button>
+            <button class="ghost-button" id="queueCollect" type="button">Queue</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="library surface" aria-label="Aggregated media library">
+      <div class="section-title library-title">
+        <div>
+          <p class="eyebrow">Media Vault</p>
+          <h2>Movies, Music, Photos</h2>
+        </div>
+        <label class="search-box">
+          <span>Search</span>
+          <input id="searchMedia" type="search" placeholder="Title, creator, chain, market" />
+        </label>
+      </div>
+
+      <div class="filter-row" id="typeFilters"></div>
+      <div class="media-grid" id="mediaGrid"></div>
+    </section>
+
+    <section class="market-panel surface" aria-label="Sources">
+      <div class="section-title">
+        <div>
+          <p class="eyebrow">Sources</p>
+          <h2>Media Routes</h2>
+        </div>
+        <select id="marketFilter" aria-label="Market category">
+          <option value="all">All sources</option>
+          <option value="music">Music</option>
+          <option value="movie">Movies</option>
+          <option value="photo">Photos</option>
+        </select>
+      </div>
+      <div class="market-list" id="marketList"></div>
+    </section>
+
+    <section class="signing surface" aria-label="Access review queue">
+      <div class="section-title">
+        <div>
+          <p class="eyebrow">Review</p>
+          <h2>Access Queue</h2>
+        </div>
+        <button class="ghost-button" id="clearQueue" type="button">Clear</button>
+      </div>
+
+      <div class="security-summary" id="securitySummary"></div>
+      <div class="security-protocols" id="securityProtocols"></div>
+      <div class="guard-monitor" id="guardMonitor" aria-live="polite"></div>
+
+      <div class="device-modes" role="group" aria-label="Hardware transport">
+        <button class="mode-button active" data-transport="USB" type="button">USB</button>
+        <button class="mode-button" data-transport="BLE" type="button">BLE</button>
+        <button class="mode-button" data-transport="QR" type="button">QR</button>
+      </div>
+
+      <button class="ghost-button full-width" id="simulateAttack" type="button">Run Guard Test</button>
+      <div id="txQueue" class="tx-list"></div>
+    </section>
+  </main>
+
+  <script src="guard/dreaded-guard.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

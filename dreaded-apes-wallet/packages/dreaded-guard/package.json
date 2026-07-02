@@ -1,0 +1,22 @@
+{
+  "name": "@dreaded-apes/guard",
+  "version": "1.0.0",
+  "description": "Dependency-free transaction security guard for wallet intent review.",
+  "main": "dist/dreaded-guard.js",
+  "browser": "dist/dreaded-guard.js",
+  "types": "types/index.d.ts",
+  "files": [
+    "dist",
+    "types",
+    "README.md"
+  ],
+  "keywords": [
+    "wallet",
+    "security",
+    "web3",
+    "transaction-simulation",
+    "hardware-wallet",
+    "approval-guard"
+  ],
+  "license": "MIT"
+}

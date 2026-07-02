@@ -1,0 +1,20 @@
+{
+  "name": "Dreaded Apes Wallet",
+  "short_name": "Dreaded",
+  "description": "A multichain media vault and player for movies, music, and photos.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0d0d0f",
+  "theme_color": "#d64d4d",
+  "orientation": "any",
+  "categories": ["entertainment", "music", "photo", "productivity"],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
