@@ -221,12 +221,12 @@ const media = [
 ];
 
 const markets = [
-  { name: 'Zora', category: 'photo', chain: 'Base', access: 'Vault pass', catalog: '1.8M items', speed: 'Fast', url: 'https://zora.co' },
-  { name: 'Sound', category: 'music', chain: 'Ethereum', access: 'Audio drop', catalog: '640K tracks', speed: 'Mainnet', url: 'https://www.sound.xyz' },
-  { name: 'OpenSea', category: 'photo', chain: 'Polygon', access: 'Gallery view', catalog: '9.4M assets', speed: 'Synced', url: 'https://opensea.io' },
-  { name: 'Magic Eden', category: 'music', chain: 'Solana', access: 'Creator set', catalog: '7.1M files', speed: 'Fast', url: 'https://magiceden.io' },
-  { name: 'Livepeer', category: 'movie', chain: 'Arbitrum', access: 'Video stream', catalog: '310K streams', speed: 'Stream', url: 'https://livepeer.org' },
-  { name: 'Archive Index', category: 'movie', chain: 'Multichain', access: 'Read-only', catalog: 'Open catalog', speed: 'Indexed', url: 'https://archive.org' }
+  { name: 'Zora', category: 'photo', chain: 'Base', access: 'Vault pass', catalog: '1.8M items', speed: 'Fast', url: 'https://zora.co', art: 'assets/wallet/media-vault-empty-state-1200x800.png' },
+  { name: 'Sound', category: 'music', chain: 'Ethereum', access: 'Audio drop', catalog: '640K tracks', speed: 'Mainnet', url: 'https://www.sound.xyz', art: 'assets/covers/cover-black-glass-radio.png' },
+  { name: 'OpenSea', category: 'photo', chain: 'Polygon', access: 'Gallery view', catalog: '9.4M assets', speed: 'Synced', url: 'https://opensea.io', art: 'assets/covers/cover-red-sun-contact-sheet.png' },
+  { name: 'Magic Eden', category: 'music', chain: 'Solana', access: 'Creator set', catalog: '7.1M files', speed: 'Fast', url: 'https://magiceden.io', art: 'assets/covers/cover-antenna-choir.png' },
+  { name: 'Livepeer', category: 'movie', chain: 'Arbitrum', access: 'Video stream', catalog: '310K streams', speed: 'Stream', url: 'https://livepeer.org', art: 'assets/covers/cover-cold-frame.png' },
+  { name: 'Archive Index', category: 'movie', chain: 'Multichain', access: 'Read-only', catalog: 'Open catalog', speed: 'Indexed', url: 'https://archive.org', art: 'assets/wallet/hardware-wallet-panel-1200x800.png' }
 ];
 
 const storageKey = 'dreaded-apes-wallet-state';
@@ -556,7 +556,9 @@ function renderMediaGrid() {
     const pinned = state.pinned.includes(item.id);
     return `
       <article class="media-card ${item.id === state.activeMedia ? 'active' : ''}">
-        <canvas class="media-thumb" width="420" height="260" data-cover="${item.id}"></canvas>
+        <button class="media-art-button" type="button" data-play="${item.id}" aria-label="Load ${item.title}">
+          <img class="media-thumb" src="${item.cover}" alt="" aria-hidden="true" loading="lazy" />
+        </button>
         <div class="media-body">
           <div class="media-row">
             <h3 class="media-title">${item.title}</h3>
@@ -571,10 +573,6 @@ function renderMediaGrid() {
       </article>
     `;
   }).join('') || '<div class="empty-state">No media matched this vault.</div>';
-
-  $$('[data-cover]').forEach(canvas => {
-    drawCover(canvas, media.find(item => item.id === canvas.dataset.cover), 0, true);
-  });
 
   $$('[data-play]').forEach(button => {
     button.addEventListener('click', () => {
@@ -618,6 +616,7 @@ function renderMarkets() {
   const items = markets.filter(market => state.marketFilter === 'all' || market.category === state.marketFilter);
   $('#marketList').innerHTML = items.map(market => `
     <article class="market-card">
+      <img class="market-art" src="${market.art}" alt="" aria-hidden="true" loading="lazy" />
       <div class="market-card-header">
         <div>
           <div class="market-name">${market.name}</div>
