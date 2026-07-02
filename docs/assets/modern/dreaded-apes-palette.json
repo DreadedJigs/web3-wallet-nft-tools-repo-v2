@@ -1,0 +1,57 @@
+[
+  {
+    "name": "Void Black",
+    "hex": "#0A0A0A",
+    "role": "Primary background, app chrome, premium dark surfaces"
+  },
+  {
+    "name": "Space Navy",
+    "hex": "#0D1B2A",
+    "role": "Deep panels, gradients, card backgrounds"
+  },
+  {
+    "name": "Ape Blue",
+    "hex": "#1E5BAA",
+    "role": "Mascot skin tone, brand depth, secondary visual anchor"
+  },
+  {
+    "name": "Electric Cyan",
+    "hex": "#00D4FF",
+    "role": "Focus states, data glow, links, active UI"
+  },
+  {
+    "name": "Signal Red",
+    "hex": "#FF3B30",
+    "role": "Danger, rejection, warning state, energy accents"
+  },
+  {
+    "name": "Dreaded Gold",
+    "hex": "#FFB703",
+    "role": "Primary brand accent, CTAs, badge edges, highlights"
+  },
+  {
+    "name": "Signal Yellow",
+    "hex": "#FFE600",
+    "role": "High-visibility highlights, alerts, poster accents"
+  },
+  {
+    "name": "Bone White",
+    "hex": "#E6E0D4",
+    "role": "Text on dark, helmet/suit neutral, editorial warmth"
+  },
+  {
+    "name": "Graffiti Magenta",
+    "hex": "#FF2BAA",
+    "role": "Street-art accent, special drops, expressive moments"
+  },
+  {
+    "name": "Success Green",
+    "hex": "#22C55E",
+    "role": "Connected, success, approved transaction state"
+  },
+  {
+    "name": "Neutral Purple",
+    "hex": "#8B5CF6",
+    "role": "Neutral status, secondary charts, collectibles"
+  }
+]

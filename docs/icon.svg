@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Dreaded Apes Wallet</title>
+  <rect width="512" height="512" rx="96" fill="#0d0d0f"/>
+  <path d="M112 128h170c70 0 118 47 118 128s-48 128-118 128H112V128Z" fill="#d64d4d"/>
+  <path d="M178 184h86c38 0 66 27 66 72s-28 72-66 72h-86V184Z" fill="#0d0d0f"/>
+  <path d="M210 216v80h43c24 0 39-16 39-40s-15-40-39-40h-43Z" fill="#d9a441"/>
+  <path d="M88 392h336" stroke="#45b6bd" stroke-width="24" stroke-linecap="round"/>
+</svg>
