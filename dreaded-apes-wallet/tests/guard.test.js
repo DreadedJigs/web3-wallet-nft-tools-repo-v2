@@ -135,6 +135,43 @@ test('background monitor warns on risky signature requests', () => {
   assert.ok(event.security.findings.some(finding => finding.code === 'SIGNATURE_REQUEST'));
 });
 
+test('background monitor pauses wallet network changes for approval', async () => {
+  let providerCalled = false;
+  let approveReview;
+  const provider = {
+    async request() {
+      providerCalled = true;
+      return 'switched';
+    }
+  };
+
+  Guard.createBackgroundMonitor({
+    guard: createTestGuard(),
+    provider,
+    getContext: () => ({ walletAddress: '0xabc' }),
+    getIntentDefaults: () => ({
+      source: 'Dreaded Apes Wallet',
+      chainId: 'base',
+      symbol: 'ETH',
+      origin: 'https://dreadedjigs.github.io/web3-wallet-nft-tools-repo-v2/'
+    }),
+    onReview: event => new Promise(resolve => {
+      approveReview = () => resolve(event.security.decision === 'hold');
+    })
+  });
+
+  const pending = provider.request({
+    method: 'wallet_switchEthereumChain',
+    params: [{ chainId: '0x8173' }]
+  });
+
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(providerCalled, false);
+  approveReview();
+  assert.equal(await pending, 'switched');
+  assert.equal(providerCalled, true);
+});
+
 test('background monitor blocks eth_sign raw signature requests', () => {
   const monitor = Guard.createBackgroundMonitor({
     guard: createTestGuard(),

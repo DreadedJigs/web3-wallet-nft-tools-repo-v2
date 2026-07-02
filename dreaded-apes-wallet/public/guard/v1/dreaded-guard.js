@@ -423,6 +423,16 @@
             error.intent = event.intent;
             throw error;
           }
+          if (event.security.decision === 'hold' && typeof options.onReview === 'function') {
+            const approved = await options.onReview(event);
+            if (!approved) {
+              const error = new Error('Denied by Dreaded Guard review');
+              error.code = 4001;
+              error.security = event.security;
+              error.intent = event.intent;
+              throw error;
+            }
+          }
         }
 
         return originalRequest(request);

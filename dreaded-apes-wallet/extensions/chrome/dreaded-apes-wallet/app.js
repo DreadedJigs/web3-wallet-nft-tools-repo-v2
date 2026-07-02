@@ -372,6 +372,10 @@ let deferredInstallPrompt = null;
 let guardMonitor = null;
 let assetRefreshToken = 0;
 const imageCache = new Map();
+const metadataCache = new Map();
+const emptyCover = 'assets/wallet/media-vault-empty-state-1200x800.png';
+const tokenUriSelector = '0xc87b56dd';
+const guardReviewResolvers = new Map();
 
 function persist() {
   const snapshot = {
@@ -800,6 +804,128 @@ function firstString(...values) {
   return values.flat().find(value => typeof value === 'string' && value.trim()) || '';
 }
 
+function nftFallbackCover() {
+  return emptyCover;
+}
+
+function isFallbackCover(url = '') {
+  return !url || String(url).includes(emptyCover);
+}
+
+function uint256Hex(value = '') {
+  try {
+    const id = BigInt(String(value));
+    if (id < 0n) return '';
+    return id.toString(16).padStart(64, '0');
+  } catch {
+    return '';
+  }
+}
+
+function decodeEthString(result = '') {
+  const hex = String(result || '').replace(/^0x/i, '');
+  if (hex.length < 128) return '';
+  const offset = Number.parseInt(hex.slice(0, 64), 16);
+  if (!Number.isFinite(offset)) return '';
+  const lengthStart = offset * 2;
+  const byteLength = Number.parseInt(hex.slice(lengthStart, lengthStart + 64), 16);
+  if (!Number.isFinite(byteLength)) return '';
+  const data = hex.slice(lengthStart + 64, lengthStart + 64 + byteLength * 2);
+  const bytes = data.match(/.{1,2}/g)?.map(byte => Number.parseInt(byte, 16)) || [];
+  try {
+    return new TextDecoder().decode(new Uint8Array(bytes)).replace(/\0+$/g, '');
+  } catch {
+    return '';
+  }
+}
+
+function metadataImageFromKnownUri(uri = '', tokenId = '') {
+  const normalized = normalizeIpfs(uri);
+  const hatcheryMatch = normalized.match(/^https:\/\/hatchery\.powpond\.com\/api\/metadata\/(\d+)/i);
+  if (hatcheryMatch) return `https://hatchery.powpond.com/api/images/${hatcheryMatch[1]}`;
+  if (/\/metadata\/?$/.test(normalized) && tokenId) return `${normalized.replace(/\/$/, '')}/${tokenId}`;
+  return '';
+}
+
+async function fetchTokenMetadata(uri = '', tokenId = '') {
+  const normalized = normalizeIpfs(uri);
+  if (!normalized) return {};
+  if (normalized.startsWith('data:application/json;base64,')) {
+    try {
+      return JSON.parse(atob(normalized.slice('data:application/json;base64,'.length)));
+    } catch {
+      return {};
+    }
+  }
+  if (normalized.startsWith('data:application/json,')) {
+    try {
+      return JSON.parse(decodeURIComponent(normalized.slice('data:application/json,'.length)));
+    } catch {
+      return {};
+    }
+  }
+
+  const safeUrl = safeAssetUrl(normalized, '');
+  if (!safeUrl) return {};
+  try {
+    return await fetchJsonWithTimeout(safeUrl, { timeoutMs: 7000 });
+  } catch {
+    const inferred = metadataImageFromKnownUri(normalized, tokenId);
+    return inferred ? { image: inferred } : {};
+  }
+}
+
+async function tokenUriForAsset(asset = {}) {
+  const chain = chains.find(item => item.id === asset.chain);
+  const tokenHex = uint256Hex(asset.tokenId);
+  if (!chain?.rpc || !asset.contract || asset.contract === 'unknown' || !tokenHex) return '';
+  const cacheKey = `${chain.id}:${asset.contract}:${asset.tokenId}:tokenUri`;
+  if (metadataCache.has(cacheKey)) return metadataCache.get(cacheKey);
+  try {
+    const result = await rpcRequest(chain, 'eth_call', [{ to: asset.contract, data: `${tokenUriSelector}${tokenHex}` }, 'latest']);
+    const uri = decodeEthString(result);
+    metadataCache.set(cacheKey, uri);
+    return uri;
+  } catch {
+    metadataCache.set(cacheKey, '');
+    return '';
+  }
+}
+
+async function enrichAssetWithTokenMetadata(asset = {}) {
+  if (!isFallbackCover(asset.cover) || !asset.contract || !asset.tokenId) return asset;
+  const cacheKey = `${asset.chain}:${asset.contract}:${asset.tokenId}:metadata`;
+  let metadata = metadataCache.get(cacheKey);
+  if (!metadata) {
+    const uri = await tokenUriForAsset(asset);
+    metadata = await fetchTokenMetadata(uri, asset.tokenId);
+    metadataCache.set(cacheKey, metadata);
+  }
+
+  const image = safeAssetUrl(firstString(metadata.image, metadata.image_url, metadata.imageUrl), '');
+  const mediaUrl = safeAssetUrl(firstString(metadata.animation_url, metadata.animationUrl, metadata.media_url, metadata.mediaUrl, image), '');
+  if (!image && !mediaUrl) return asset;
+
+  const type = inferMediaType({ ...metadata, image, media: mediaUrl });
+  return {
+    ...asset,
+    title: metadata.name || asset.title,
+    type,
+    cover: image || mediaUrl || asset.cover,
+    mediaUrl: mediaUrl || image || asset.mediaUrl,
+    runtime: type === 'photo' ? 'Owned image' : 'Owned media',
+    format: type === 'movie' ? '8K capable stream' : type === 'music' ? 'Wallet audio' : 'High-res image'
+  };
+}
+
+async function enrichAssetsWithTokenMetadata(assets = []) {
+  const pending = assets.filter(asset => isFallbackCover(asset.cover)).slice(0, 48);
+  if (!pending.length) return assets;
+  const enriched = await Promise.all(pending.map(enrichAssetWithTokenMetadata));
+  const enrichedById = new Map(enriched.map(asset => [asset.id, asset]));
+  return assets.map(asset => enrichedById.get(asset.id) || asset);
+}
+
 function inferMediaType(token = {}) {
   const url = firstString(token.animation_url, token.animationUrl, token.media, token.image, token.imageUrl).toLowerCase();
   const mime = firstString(token.mimeType, token.contentType, token.metadata?.mimeType, token.metadata?.contentType).toLowerCase();
@@ -925,7 +1051,7 @@ function reservoirTokenToMedia(row = {}, source) {
     license: row.ownership?.tokenCount ? `${row.ownership.tokenCount} owned` : 'Owned NFT',
     price: 0,
     format: type === 'movie' ? '8K capable stream' : type === 'music' ? 'Wallet audio' : 'High-res image',
-    cover: image || 'assets/wallet/media-vault-empty-state-1200x800.png',
+    cover: image || nftFallbackCover(),
     mediaUrl,
     contract,
     tokenId,
@@ -978,7 +1104,7 @@ function blockscoutNftToMedia(row = {}, source) {
     license: row.value ? `${row.value} owned` : 'Owned NFT',
     price: 0,
     format: type === 'movie' ? '8K capable stream' : type === 'music' ? 'Wallet audio' : 'High-res image',
-    cover: image || 'assets/wallet/media-vault-empty-state-1200x800.png',
+    cover: image || nftFallbackCover(),
     mediaUrl,
     contract,
     tokenId,
@@ -1027,7 +1153,7 @@ function blockscoutTokenToMedia(row = {}, source) {
     license: row.value ? `${row.value} owned` : 'Owned NFT',
     price: 0,
     format: type === 'movie' ? '8K capable stream' : type === 'music' ? 'Wallet audio' : 'High-res image',
-    cover: image || 'assets/wallet/media-vault-empty-state-1200x800.png',
+    cover: image || nftFallbackCover(),
     mediaUrl,
     contract,
     tokenId,
@@ -1070,7 +1196,6 @@ function sourceRowsToMedia(payload = {}, source) {
 }
 
 function dedupeAssets(assets = []) {
-  const fallbackCover = 'assets/wallet/media-vault-empty-state-1200x800.png';
   const map = new Map();
   for (const asset of assets) {
     if (!asset?.id) continue;
@@ -1080,8 +1205,8 @@ function dedupeAssets(assets = []) {
       continue;
     }
 
-    const existingHasArt = existing.cover && existing.cover !== fallbackCover;
-    const nextHasArt = asset.cover && asset.cover !== fallbackCover;
+    const existingHasArt = existing.cover && !isFallbackCover(existing.cover);
+    const nextHasArt = asset.cover && !isFallbackCover(asset.cover);
     if (!existingHasArt && nextHasArt) map.set(asset.id, asset);
   }
   return [...map.values()];
@@ -1098,7 +1223,7 @@ async function loadNftMedia(address) {
       return { source: source.name, ok: false, error: error.name === 'AbortError' ? 'timeout' : error.message, assets: [] };
     }
   }));
-  const assets = dedupeAssets(results.flatMap(result => result.assets));
+  const assets = await enrichAssetsWithTokenMetadata(dedupeAssets(results.flatMap(result => result.assets)));
   const sourceHealth = results.map(({ source, ok, error }) => ({ source, ok, error }));
   return { assets, sources: sourceHealth };
 }
@@ -1171,11 +1296,38 @@ function warningTitle(security) {
   return 'Guard check passed';
 }
 
+function requestTargetLabel(intent = {}, request = {}) {
+  const params = Array.isArray(request.params) ? request.params : [];
+  if (intent.providerMethod === 'wallet_switchEthereumChain' || intent.method === 'wallet_switchEthereumChain') {
+    const chainId = params[0]?.chainId || intent.chainId || '';
+    const chain = chainFromChainId(chainId);
+    return chain ? `${chain.name} (${chain.chainId})` : chainId || 'Unknown network';
+  }
+  if (intent.providerMethod === 'wallet_addEthereumChain' || intent.method === 'wallet_addEthereumChain') {
+    const chainId = params[0]?.chainId || intent.chainId || '';
+    const chainName = params[0]?.chainName || chainFromChainId(chainId)?.name || 'Network';
+    return `${chainName} (${chainId || 'unknown chain'})`;
+  }
+  return intent.recipient || intent.spender || intent.assetRecipient || 'No recipient';
+}
+
+function compactOrigin(origin = '') {
+  try {
+    const url = new URL(origin);
+    return url.host || origin;
+  } catch {
+    return origin || 'Local wallet';
+  }
+}
+
 function createGuardWarning(event) {
   const intent = event.intent || {};
   const security = event.security || auditTransaction(intent);
   const method = intent.providerMethod || intent.method || 'transaction';
   const findings = security.findings.filter(finding => finding.level !== 'info');
+  const request = event.request || {};
+  const requester = intent.sender || state.address || '';
+  const target = requestTargetLabel(intent, request);
 
   return {
     id: `${security.checkedAt}-${method}-${security.score}`,
@@ -1183,8 +1335,12 @@ function createGuardWarning(event) {
     decision: security.decision,
     score: security.score,
     method,
+    requester,
+    target,
     origin: intent.origin || 'Local wallet action',
+    originHost: compactOrigin(intent.origin || window.location.href),
     checkedAt: security.checkedAt,
+    reviewStatus: security.decision === 'hold' ? 'pending' : security.decision,
     findings: findings.length ? findings : security.findings
   };
 }
@@ -1208,6 +1364,35 @@ function recordGuardWarning(event) {
   renderSecurity();
 }
 
+function requestGuardReview(event) {
+  const warning = createGuardWarning(event);
+  state.guardEvents = [
+    warning,
+    ...state.guardEvents.filter(item => item.id !== warning.id)
+  ].slice(0, 6);
+  state.hardware = 'Guard review';
+  persist();
+  renderGuardMonitor();
+  renderChains();
+  return new Promise(resolve => {
+    guardReviewResolvers.set(warning.id, resolve);
+  });
+}
+
+function resolveGuardReview(id, approved) {
+  const resolver = guardReviewResolvers.get(id);
+  if (resolver) {
+    resolver(Boolean(approved));
+    guardReviewResolvers.delete(id);
+  }
+  state.guardEvents = state.guardEvents.filter(event => event.id !== id);
+  state.hardware = approved ? 'Approved by guard' : 'Denied by guard';
+  persist();
+  renderGuardMonitor();
+  renderChains();
+  renderSecurity();
+}
+
 function startGuardMonitor() {
   if (!DreadedGuard.createBackgroundMonitor) return;
 
@@ -1218,7 +1403,8 @@ function startGuardMonitor() {
       getContext: () => ({ walletAddress: state.address }),
       getIntentDefaults: guardIntentDefaults,
       blockDecisions: ['block'],
-      onWarning: recordGuardWarning
+      onWarning: recordGuardWarning,
+      onReview: requestGuardReview
     });
     return;
   }
@@ -1557,7 +1743,7 @@ function renderGuardMonitor() {
 
   const providerProtected = guardMonitor?.isRunning();
   const status = providerProtected ? 'Provider protected' : window.ethereum ? 'Local guard active' : 'Local guard active';
-  const latest = state.guardEvents.slice(0, 3);
+  const latest = state.guardEvents.slice(0, 2);
 
   panel.innerHTML = `
     <div class="guard-monitor-header">
@@ -1570,22 +1756,51 @@ function renderGuardMonitor() {
     <div class="guard-warning-list">
       ${latest.map(event => `
         <article class="guard-warning ${event.decision}">
-          <div>
-            <strong>${event.title}</strong>
-            <span>${event.method} - score ${event.score}</span>
+          <div class="guard-warning-top">
+            <div>
+              <strong>${escapeHtml(event.title)}</strong>
+              <span>${escapeHtml(event.method)} - score ${event.score}</span>
+            </div>
+            <span class="pill ${event.decision}">${event.reviewStatus === 'pending' ? 'Review' : escapeHtml(event.decision)}</span>
+          </div>
+          <div class="guard-warning-facts">
+            <div><span>Requester</span><strong class="guard-address">${escapeHtml(event.requester || 'Unknown wallet')}</strong></div>
+            <div><span>Target</span><strong>${escapeHtml(event.target || 'Unknown target')}</strong></div>
+            <div><span>Origin</span><strong>${escapeHtml(event.originHost || event.origin)}</strong></div>
           </div>
           <ul>
-            ${event.findings.slice(0, 3).map(finding => `<li>${finding.label}</li>`).join('')}
+            ${event.findings.slice(0, 2).map(finding => `<li>${escapeHtml(finding.label)}</li>`).join('')}
           </ul>
+          ${event.reviewStatus === 'pending' ? `
+            <div class="guard-review-actions">
+              <button class="ghost-button approve" type="button" data-approve-guard="${escapeAttr(event.id)}">Approve</button>
+              <button class="ghost-button deny" type="button" data-deny-guard="${escapeAttr(event.id)}">Deny</button>
+            </div>
+          ` : ''}
         </article>
       `).join('') || '<div class="empty-state compact">No background warnings.</div>'}
     </div>
   `;
 
   $('#clearGuardEvents')?.addEventListener('click', () => {
+    state.guardEvents.forEach(event => {
+      const resolver = guardReviewResolvers.get(event.id);
+      if (resolver) {
+        resolver(false);
+        guardReviewResolvers.delete(event.id);
+      }
+    });
     state.guardEvents = [];
     persist();
     renderGuardMonitor();
+  });
+
+  $$('[data-approve-guard]').forEach(button => {
+    button.addEventListener('click', () => resolveGuardReview(button.dataset.approveGuard, true));
+  });
+
+  $$('[data-deny-guard]').forEach(button => {
+    button.addEventListener('click', () => resolveGuardReview(button.dataset.denyGuard, false));
   });
 }
 
