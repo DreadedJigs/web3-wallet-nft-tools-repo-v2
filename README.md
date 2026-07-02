@@ -6,3 +6,5 @@ Web3 tools
 The production wallet/media vault is in `dreaded-apes-wallet/`.
 
 GitHub Pages deployment uses `.github/workflows/dreaded-apes-wallet-pages.yml` and publishes `dreaded-apes-wallet/public`.
+
+Production verification uses `.github/workflows/dreaded-apes-wallet-ci.yml`.

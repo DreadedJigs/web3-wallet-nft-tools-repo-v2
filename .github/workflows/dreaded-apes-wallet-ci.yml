@@ -1,0 +1,47 @@
+name: Verify Dreaded Apes Wallet
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - dreaded-apes-wallet/**
+      - .github/workflows/dreaded-apes-wallet-ci.yml
+  pull_request:
+    paths:
+      - dreaded-apes-wallet/**
+      - .github/workflows/dreaded-apes-wallet-ci.yml
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dreaded-apes-wallet
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Syntax check
+        run: npm run check
+
+      - name: Test guard
+        run: npm test
+
+      - name: Sync guard bundles
+        run: npm run sync:guard
+
+      - name: Build extension package
+        run: npm run build:extension
+
+      - name: Verify production bundle
+        run: npm run verify:production
+
+      - name: Ensure generated assets are committed
+        run: git diff --exit-code -- public/guard/v1/dreaded-guard.js packages/dreaded-guard/dist/dreaded-guard.js public/downloads/dreaded-apes-wallet-extension.zip extensions/chrome/dreaded-apes-wallet public/release.json

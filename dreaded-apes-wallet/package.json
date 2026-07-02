@@ -11,6 +11,7 @@
     "build:extension": "node scripts/build-extension.js",
     "sync:guard": "node scripts/sync-guard-package.js",
     "test": "node --test tests/guard.test.js",
+    "verify:production": "node scripts/verify-production.js",
     "serve": "node server.js"
   },
   "keywords": [

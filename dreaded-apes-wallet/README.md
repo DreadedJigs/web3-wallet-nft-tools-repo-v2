@@ -49,7 +49,7 @@ https://DreadedApes.carrd.co/
 
 ### GitHub Pages
 
-This repo includes a GitHub Actions workflow that deploys the `public/` folder to GitHub Pages.
+This repo includes a root GitHub Actions workflow that deploys `dreaded-apes-wallet/public` to GitHub Pages.
 
 1. Push the repo to GitHub.
 2. In the repo settings, open **Pages**.
@@ -83,6 +83,7 @@ Set `PORT` if your host requires it.
 - Use `/guard/v1/dreaded-guard.js` for stable partner integrations.
 - Keep `DreadedGuard.createBackgroundMonitor(...)` enabled around wallet providers in production builds.
 - Build the downloadable extension ZIP with `npm run build:extension`.
+- Run `npm run verify:production` before pushing release changes.
 - Run a security review on wallet/device flows before public wallet actions.
 - Add uptime monitoring for `/healthz`.
 - Add privacy policy and support contact pages before store submission or paid traffic.
@@ -102,8 +103,10 @@ packages/dreaded-guard       Publishable guard package with types
 tests/guard.test.js          Automated guard policy tests
 public/manifest.webmanifest  PWA manifest
 public/sw.js                 Offline app-shell cache
+public/release.json          Static release metadata
 public/downloads/dreaded-apes-wallet-extension.zip Browser extension package
 extensions/chrome/dreaded-apes-wallet Chrome/Edge extension source
-.github/workflows/pages.yml GitHub Pages deployment workflow
+../.github/workflows/dreaded-apes-wallet-pages.yml GitHub Pages deployment workflow
+../.github/workflows/dreaded-apes-wallet-ci.yml Production verification workflow
 public/.nojekyll             GitHub Pages static-file marker
 ```

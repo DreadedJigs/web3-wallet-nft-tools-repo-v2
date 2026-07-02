@@ -15,7 +15,8 @@ https://DreadedApes.carrd.co/
 This repository includes:
 
 ```text
-.github/workflows/pages.yml
+../.github/workflows/dreaded-apes-wallet-pages.yml
+../.github/workflows/dreaded-apes-wallet-ci.yml
 public/.nojekyll
 ```
 
@@ -25,7 +26,7 @@ Setup:
 2. Open repository **Settings**.
 3. Go to **Pages**.
 4. Set **Source** to **GitHub Actions**.
-5. Push to `main` or run the workflow manually from the Actions tab.
+5. Push to `main` or run the Dreaded Apes Wallet workflow manually from the Actions tab.
 
 Typical URL:
 

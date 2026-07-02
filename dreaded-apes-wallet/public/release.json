@@ -1,0 +1,9 @@
+{
+  "name": "Dreaded Apes Wallet",
+  "version": "1.0.0",
+  "mode": "production",
+  "guardVersion": "1.0.0",
+  "serviceWorkerCache": "dreaded-apes-wallet-v2",
+  "extensionDownload": "downloads/dreaded-apes-wallet-extension.zip",
+  "guardBundle": "guard/v1/dreaded-guard.js"
+}

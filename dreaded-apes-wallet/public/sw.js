@@ -14,6 +14,7 @@ const APP_SHELL = [
   './guard/demo.js',
   './guard/policy.example.json',
   './manifest.webmanifest',
+  './release.json',
   './icon.svg',
   './downloads/extension-install.txt'
 ];
