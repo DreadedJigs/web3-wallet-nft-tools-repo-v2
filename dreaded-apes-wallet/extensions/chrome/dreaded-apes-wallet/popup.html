@@ -33,6 +33,31 @@
         <span id="walletAddress">Read-only vault</span>
       </section>
 
+      <section class="skin-studio" aria-label="Wallet skin studio">
+        <div class="section-title">
+          <h2>Skin Studio</h2>
+          <span id="skinName">Dreaded Red</span>
+        </div>
+        <div class="skin-preview" id="skinPreview" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <label class="field-label" for="skinSelect">Palette</label>
+        <select id="skinSelect" aria-label="Wallet skin">
+          <option value="dreaded">Dreaded Red</option>
+          <option value="obsidian">Obsidian Glass</option>
+          <option value="phantom">Phantom Neon</option>
+          <option value="vaultGold">Vault Gold</option>
+        </select>
+        <div class="skin-swatches" id="skinSwatches" aria-label="Active skin palette"></div>
+        <label class="skin-upload" for="skinUpload">
+          <input id="skinUpload" type="file" accept="image/*" />
+          <span>Change Skin</span>
+        </label>
+        <p class="skin-note" id="skinNotice">Upload NFT art to generate a local skin.</p>
+      </section>
+
       <section>
         <div class="section-title">
           <h2>Networks</h2>

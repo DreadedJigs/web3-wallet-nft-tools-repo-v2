@@ -229,6 +229,45 @@ const markets = [
   { name: 'Archive Index', category: 'movie', chain: 'Multichain', access: 'Read-only', catalog: 'Open catalog', speed: 'Indexed', url: 'https://archive.org', art: 'assets/wallet/hardware-wallet-panel-1200x800.png' }
 ];
 
+const skinPresets = {
+  dreaded: {
+    name: 'Dreaded Red',
+    accent: '#d64d4d',
+    secondary: '#d9a441',
+    glow: '#45b6bd',
+    bg: '#0d0d0f',
+    panel: '#171719',
+    image: ''
+  },
+  obsidian: {
+    name: 'Obsidian Glass',
+    accent: '#f05a5f',
+    secondary: '#f2f0e8',
+    glow: '#78dce8',
+    bg: '#07080b',
+    panel: '#12151b',
+    image: ''
+  },
+  phantom: {
+    name: 'Phantom Neon',
+    accent: '#9a7cff',
+    secondary: '#45f2c3',
+    glow: '#55a6ff',
+    bg: '#090811',
+    panel: '#151320',
+    image: ''
+  },
+  vaultGold: {
+    name: 'Vault Gold',
+    accent: '#d9a441',
+    secondary: '#f05a5f',
+    glow: '#55b978',
+    bg: '#120f0a',
+    panel: '#1d1711',
+    image: ''
+  }
+};
+
 const storageKey = 'dreaded-apes-wallet-state';
 const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
 const hardwareFilters = [
@@ -306,6 +345,9 @@ const state = {
   walletLabel: saved.walletLabel || 'Read-only vault',
   hardware: saved.hardware || 'Ready',
   transport: saved.transport || 'USB',
+  skinId: saved.skinId === 'custom' && saved.customSkin ? 'custom' : skinPresets[saved.skinId] ? saved.skinId : 'dreaded',
+  customSkin: saved.customSkin || null,
+  skinNotice: '',
   pinned: saved.pinned || [],
   queue: saved.queue || [],
   guardEvents: saved.guardEvents || [],
@@ -320,7 +362,7 @@ let guardMonitor = null;
 const imageCache = new Map();
 
 function persist() {
-  localStorage.setItem(storageKey, JSON.stringify({
+  const snapshot = {
     activeChain: state.activeChain,
     activeMedia: state.activeMedia,
     filter: state.filter,
@@ -329,11 +371,25 @@ function persist() {
     walletLabel: state.walletLabel,
     hardware: state.hardware,
     transport: state.transport,
+    skinId: state.skinId,
+    customSkin: state.customSkin,
     pinned: state.pinned,
     queue: state.queue,
     guardEvents: state.guardEvents,
     elapsed: state.elapsed
-  }));
+  };
+
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(snapshot));
+  } catch (error) {
+    if (!state.customSkin?.image) throw error;
+    const image = state.customSkin.image;
+    state.customSkin = { ...state.customSkin, image: '' };
+    snapshot.customSkin = state.customSkin;
+    localStorage.setItem(storageKey, JSON.stringify(snapshot));
+    state.customSkin = { ...state.customSkin, image };
+    state.skinNotice = 'Palette saved locally. Background art was too large to persist.';
+  }
 }
 
 function activeChain() {
@@ -346,6 +402,236 @@ function activeMedia() {
 
 function mediaChain(item) {
   return chains.find(chain => chain.id === item.chain) || chains[0];
+}
+
+function clamp(value, min = 0, max = 255) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function hexToRgb(hex) {
+  const value = String(hex || '').replace('#', '').trim();
+  const normalized = value.length === 3
+    ? value.split('').map(character => `${character}${character}`).join('')
+    : value.padEnd(6, '0').slice(0, 6);
+  return {
+    r: Number.parseInt(normalized.slice(0, 2), 16) || 0,
+    g: Number.parseInt(normalized.slice(2, 4), 16) || 0,
+    b: Number.parseInt(normalized.slice(4, 6), 16) || 0
+  };
+}
+
+function rgbToHex(color) {
+  return `#${[color.r, color.g, color.b].map(value => clamp(Math.round(value)).toString(16).padStart(2, '0')).join('')}`;
+}
+
+function rgbToHsl(color) {
+  const r = color.r / 255;
+  const g = color.g / 255;
+  const b = color.b / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+
+  if (max === min) return { h: 0, s: 0, l };
+
+  const delta = max - min;
+  const s = l > 0.5 ? delta / (2 - max - min) : delta / (max + min);
+  let h = 0;
+
+  if (max === r) h = (g - b) / delta + (g < b ? 6 : 0);
+  if (max === g) h = (b - r) / delta + 2;
+  if (max === b) h = (r - g) / delta + 4;
+
+  return { h: h / 6, s, l };
+}
+
+function colorDistance(a, b) {
+  return Math.hypot(a.r - b.r, a.g - b.g, a.b - b.b);
+}
+
+function adjustColor(hex, amount) {
+  const color = hexToRgb(hex);
+  return rgbToHex({
+    r: color.r + (amount * 255),
+    g: color.g + (amount * 255),
+    b: color.b + (amount * 255)
+  });
+}
+
+function activeSkin() {
+  if (state.skinId === 'custom' && state.customSkin) return state.customSkin;
+  return skinPresets[state.skinId] || skinPresets.dreaded;
+}
+
+function skinColors(skin = activeSkin()) {
+  return [skin.accent, skin.secondary, skin.glow];
+}
+
+function applySkin() {
+  const skin = activeSkin();
+  const root = document.documentElement;
+  const panel = adjustColor(skin.panel, 0.02);
+  const panelRgb = hexToRgb(panel);
+  const accentRgb = hexToRgb(skin.accent);
+  const secondaryRgb = hexToRgb(skin.secondary);
+  const glowRgb = hexToRgb(skin.glow);
+
+  root.style.setProperty('--skin-bg', skin.bg);
+  root.style.setProperty('--skin-panel', skin.panel);
+  root.style.setProperty('--skin-panel-2', adjustColor(skin.panel, 0.08));
+  root.style.setProperty('--skin-accent', skin.accent);
+  root.style.setProperty('--skin-secondary', skin.secondary);
+  root.style.setProperty('--skin-glow', skin.glow);
+  root.style.setProperty('--skin-accent-rgb', `${accentRgb.r}, ${accentRgb.g}, ${accentRgb.b}`);
+  root.style.setProperty('--skin-secondary-rgb', `${secondaryRgb.r}, ${secondaryRgb.g}, ${secondaryRgb.b}`);
+  root.style.setProperty('--skin-glow-rgb', `${glowRgb.r}, ${glowRgb.g}, ${glowRgb.b}`);
+  root.style.setProperty('--skin-panel-rgb', `${panelRgb.r}, ${panelRgb.g}, ${panelRgb.b}`);
+  root.style.setProperty('--skin-image', skin.image ? `url("${skin.image}")` : 'none');
+  document.body.dataset.skin = state.skinId;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', skin.accent);
+}
+
+function renderSkinControls() {
+  const select = $('#skinSelect');
+  if (!select) return;
+
+  const skin = activeSkin();
+  const customDisabled = state.customSkin ? '' : 'disabled';
+  select.innerHTML = [
+    ...Object.entries(skinPresets).map(([id, preset]) => `<option value="${id}">${preset.name}</option>`),
+    `<option value="custom" ${customDisabled}>NFT Skin</option>`
+  ].join('');
+  select.value = state.skinId === 'custom' && !state.customSkin ? 'dreaded' : state.skinId;
+
+  $('#skinName').textContent = skin.name;
+  $('#skinSwatches').innerHTML = skinColors(skin)
+    .map(color => `<span class="skin-swatch" style="--swatch: ${color}" title="${color}"></span>`)
+    .join('');
+  $('#skinNotice').textContent = state.skinNotice || (state.skinId === 'custom' ? 'NFT skin generated locally from uploaded art.' : 'Preset palette active.');
+}
+
+function choosePaletteColor(candidates, reference, fallback) {
+  return candidates.find(candidate => !reference || colorDistance(candidate, reference) > 88) || fallback;
+}
+
+function sampleImagePalette(image) {
+  const canvas = document.createElement('canvas');
+  const size = 96;
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(image, 0, 0, size, size);
+  const { data } = ctx.getImageData(0, 0, size, size);
+  const pixels = [];
+
+  for (let index = 0; index < data.length; index += 16) {
+    if (data[index + 3] < 150) continue;
+    const color = { r: data[index], g: data[index + 1], b: data[index + 2] };
+    const hsl = rgbToHsl(color);
+    if (hsl.l < 0.04 || hsl.l > 0.96) continue;
+    pixels.push({ ...color, ...hsl });
+  }
+
+  if (!pixels.length) {
+    return {
+      accent: skinPresets.dreaded.accent,
+      secondary: skinPresets.dreaded.secondary,
+      glow: skinPresets.dreaded.glow,
+      bg: skinPresets.dreaded.bg,
+      panel: skinPresets.dreaded.panel
+    };
+  }
+
+  const vivid = pixels
+    .filter(pixel => pixel.s > 0.24 && pixel.l > 0.16 && pixel.l < 0.84)
+    .sort((a, b) => (b.s * 1.4 + b.l) - (a.s * 1.4 + a.l));
+  const sortedPixels = [...pixels].sort((a, b) => (b.s + b.l) - (a.s + a.l));
+  const dark = [...pixels].sort((a, b) => a.l - b.l)[0];
+  const accent = vivid[0] || sortedPixels[0];
+  const secondary = choosePaletteColor(vivid.slice(1), accent, sortedPixels[1] || accent);
+  const glowCandidates = vivid.filter(pixel => pixel.l > 0.42).sort((a, b) => b.l - a.l);
+  const glow = choosePaletteColor(glowCandidates, secondary, vivid[2] || accent);
+
+  return {
+    accent: rgbToHex(accent),
+    secondary: rgbToHex(secondary),
+    glow: rgbToHex(glow),
+    bg: adjustColor(rgbToHex(dark), -0.08),
+    panel: adjustColor(rgbToHex(dark), 0.04)
+  };
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener('load', () => resolve(reader.result));
+    reader.addEventListener('error', reject);
+    reader.readAsDataURL(file);
+  });
+}
+
+function loadImage(dataUrl) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.addEventListener('load', () => resolve(image));
+    image.addEventListener('error', reject);
+    image.src = dataUrl;
+  });
+}
+
+function createSkinImage(image) {
+  const maxSide = 640;
+  const scale = Math.min(1, maxSide / Math.max(image.naturalWidth || image.width, image.naturalHeight || image.height));
+  const width = Math.max(1, Math.round((image.naturalWidth || image.width) * scale));
+  const height = Math.max(1, Math.round((image.naturalHeight || image.height) * scale));
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(image, 0, 0, width, height);
+  return canvas.toDataURL('image/jpeg', 0.82);
+}
+
+async function generateSkinFromFile(file) {
+  if (!file?.type?.startsWith('image/')) {
+    state.skinNotice = 'Choose an image file to generate a skin.';
+    renderSkinControls();
+    return;
+  }
+
+  try {
+    state.skinNotice = 'Generating skin from uploaded NFT art...';
+    renderSkinControls();
+    const dataUrl = await readFileAsDataUrl(file);
+    const image = await loadImage(dataUrl);
+    const palette = sampleImagePalette(image);
+    state.customSkin = {
+      name: 'NFT Skin',
+      ...palette,
+      image: createSkinImage(image),
+      sourceName: file.name
+    };
+    state.skinId = 'custom';
+    state.skinNotice = `NFT skin generated from ${file.name}.`;
+    persist();
+    renderAll();
+  } catch (error) {
+    state.skinNotice = 'Could not generate a skin from that image.';
+    renderSkinControls();
+  }
+}
+
+function setSkin(id) {
+  if (id === 'custom' && !state.customSkin) {
+    state.skinNotice = 'Upload NFT art first to unlock the NFT skin.';
+    renderSkinControls();
+    return;
+  }
+
+  state.skinId = (skinPresets[id] || id === 'custom') ? id : 'dreaded';
+  state.skinNotice = state.skinId === 'custom' ? 'NFT skin active.' : `${activeSkin().name} palette active.`;
+  persist();
+  renderAll();
 }
 
 function shortAddress(address) {
@@ -1136,6 +1422,14 @@ function bindEvents() {
     persist();
     renderMarkets();
   });
+  $('#skinSelect')?.addEventListener('change', event => {
+    setSkin(event.target.value);
+  });
+  $('#skinUpload')?.addEventListener('change', event => {
+    const file = event.target.files?.[0];
+    if (file) generateSkinFromFile(file);
+    event.target.value = '';
+  });
   $('#progress').addEventListener('input', event => {
     const item = activeMedia();
     state.elapsed = item.duration * (Number(event.target.value) / 1000);
@@ -1176,6 +1470,8 @@ window.addEventListener('beforeinstallprompt', event => {
 
 function renderAll() {
   startGuardMonitor();
+  applySkin();
+  renderSkinControls();
   renderChains();
   renderFilters();
   renderPlayer();
