@@ -221,11 +221,13 @@ const state = {
   walletLabel: saved.walletLabel || 'Read-only vault',
   hardware: saved.hardware || 'Ready',
   transport: saved.transport || 'USB',
+  localDisconnect: Boolean(saved.localDisconnect),
   playerProfile: saved.playerProfile && playerProfiles[saved.playerProfile] ? saved.playerProfile : 'auto',
   skinId: saved.skinId === 'custom' && saved.customSkin ? 'custom' : skinPresets[saved.skinId] ? saved.skinId : 'dreaded',
   customSkin: saved.customSkin || null,
   skinNotice: '',
   mediaAssets: [],
+  assetOwner: '',
   chainBalances: {},
   assetStatus: 'idle',
   assetMessage: 'Connect wallet to index owned media.',
@@ -241,6 +243,7 @@ const state = {
 };
 let deferredInstallPrompt = null;
 let guardMonitor = null;
+let assetRefreshToken = 0;
 const imageCache = new Map();
 
 function persist() {
@@ -253,6 +256,7 @@ function persist() {
     walletLabel: state.walletLabel,
     hardware: state.hardware,
     transport: state.transport,
+    localDisconnect: state.localDisconnect,
     playerProfile: state.playerProfile,
     skinId: state.skinId,
     customSkin: state.customSkin,
@@ -283,8 +287,12 @@ function chainFromChainId(chainId) {
   return chains.find(chain => chain.chainId?.toLowerCase() === String(chainId || '').toLowerCase());
 }
 
+function normalizeAddress(value = '') {
+  return String(value || '').toLowerCase();
+}
+
 function vaultMedia() {
-  return state.address ? state.mediaAssets : [];
+  return state.address && normalizeAddress(state.assetOwner) === normalizeAddress(state.address) ? state.mediaAssets : [];
 }
 
 function activeMedia() {
@@ -355,10 +363,6 @@ function activeSkin() {
   return skinPresets[state.skinId] || skinPresets.dreaded;
 }
 
-function skinColors(skin = activeSkin()) {
-  return [skin.accent, skin.secondary, skin.glow];
-}
-
 function applySkin() {
   const skin = activeSkin();
   const root = document.documentElement;
@@ -396,9 +400,6 @@ function renderSkinControls() {
   select.value = state.skinId === 'custom' && !state.customSkin ? 'dreaded' : state.skinId;
 
   $('#skinName').textContent = skin.name;
-  $('#skinSwatches').innerHTML = skinColors(skin)
-    .map(color => `<span class="skin-swatch" style="--swatch: ${color}" title="${color}"></span>`)
-    .join('');
   $('#skinNotice').textContent = state.skinNotice || (state.skinId === 'custom' ? 'NFT skin generated locally from uploaded art.' : 'Preset palette active.');
 }
 
@@ -688,19 +689,25 @@ async function loadNftMedia(address) {
 
 async function refreshWalletAssets() {
   if (!state.address) return;
+  const owner = state.address;
+  const refreshToken = assetRefreshToken += 1;
 
   state.assetStatus = 'loading';
   state.assetMessage = 'Indexing wallet balances and owned media...';
   state.mediaAssets = [];
+  state.assetOwner = owner;
   renderAll();
 
   const [balances, indexed] = await Promise.all([
-    loadNativeBalances(state.address),
-    loadNftMedia(state.address)
+    loadNativeBalances(owner),
+    loadNftMedia(owner)
   ]);
+
+  if (refreshToken !== assetRefreshToken || normalizeAddress(state.address) !== normalizeAddress(owner)) return;
 
   state.chainBalances = balances;
   state.mediaAssets = indexed.assets;
+  state.assetOwner = owner;
   state.indexerSources = indexed.sources;
   state.assetStatus = indexed.assets.length ? 'ready' : 'empty';
   state.assetMessage = indexed.assets.length
@@ -855,6 +862,8 @@ function renderChains() {
   const connectButton = $('#connectWallet');
   connectButton.textContent = state.address ? 'Connected' : 'Connect Wallet';
   connectButton.classList.toggle('connected', Boolean(state.address));
+  const disconnectButton = $('#disconnectWallet');
+  if (disconnectButton) disconnectButton.hidden = !state.address;
 
   $('#chainList').innerHTML = chains.map(chain => `
     <button class="chain-button ${chain.id === state.activeChain ? 'active' : ''}" type="button" data-chain="${chain.id}" style="--chain-color: ${chain.color}">
@@ -1439,9 +1448,7 @@ async function connectWallet() {
 
   try {
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    state.address = accounts[0] || '';
-    state.walletLabel = state.address ? shortAddress(state.address) : 'Read-only vault';
-    state.hardware = 'Wallet linked';
+    beginWalletSession(accounts[0] || '');
     const providerChain = chainFromChainId(await window.ethereum.request({ method: 'eth_chainId' }).catch(() => ''));
     if (providerChain) state.activeChain = providerChain.id;
     persist();
@@ -1456,21 +1463,22 @@ async function connectWallet() {
 async function hydrateConnectedWallet() {
   if (!window.ethereum) return;
   const accounts = await window.ethereum.request({ method: 'eth_accounts' }).catch(() => []);
-  if (!accounts[0]) {
-    state.address = '';
-    state.walletLabel = 'Read-only vault';
-    state.mediaAssets = [];
-    state.chainBalances = {};
-    state.assetStatus = 'idle';
-    state.assetMessage = 'Connect wallet to index owned media.';
+  if (state.localDisconnect) {
+    resetWalletSession('Disconnected locally. Connect wallet to index owned media.', 'Disconnected');
     persist();
     renderAll();
     return;
   }
 
-  state.address = accounts[0];
-  state.walletLabel = shortAddress(state.address);
-  state.hardware = 'Wallet linked';
+  if (!accounts[0]) {
+    resetWalletSession('Connect wallet to index owned media.');
+    state.localDisconnect = false;
+    persist();
+    renderAll();
+    return;
+  }
+
+  beginWalletSession(accounts[0]);
   const providerChain = chainFromChainId(await window.ethereum.request({ method: 'eth_chainId' }).catch(() => ''));
   if (providerChain) state.activeChain = providerChain.id;
   persist();
@@ -1605,8 +1613,48 @@ function setTransport(transport) {
   renderChains();
 }
 
+function resetWalletSession(message = 'Connect wallet to index owned media.', hardware = 'Ready') {
+  assetRefreshToken += 1;
+  stopAudio();
+  state.address = '';
+  state.walletLabel = 'Read-only vault';
+  state.mediaAssets = [];
+  state.assetOwner = '';
+  state.chainBalances = {};
+  state.indexerSources = [];
+  state.activeMedia = '';
+  state.assetStatus = 'idle';
+  state.assetMessage = message;
+  state.elapsed = 0;
+  state.playing = false;
+  state.hardware = hardware;
+}
+
+function beginWalletSession(address) {
+  const nextAddress = address || '';
+  const changedAccount = normalizeAddress(nextAddress) !== normalizeAddress(state.address);
+  if (changedAccount) {
+    resetWalletSession('Indexing wallet balances and owned media...');
+  }
+
+  state.address = nextAddress;
+  state.walletLabel = nextAddress ? shortAddress(nextAddress) : 'Read-only vault';
+  state.localDisconnect = false;
+  state.hardware = nextAddress ? 'Wallet linked' : 'Ready';
+  state.assetStatus = nextAddress ? 'loading' : 'idle';
+  state.assetMessage = nextAddress ? 'Indexing wallet balances and owned media...' : 'Connect wallet to index owned media.';
+}
+
+function disconnectWallet() {
+  state.localDisconnect = true;
+  resetWalletSession('Disconnected locally. Connect wallet to index owned media.', 'Disconnected');
+  persist();
+  renderAll();
+}
+
 function bindEvents() {
   $('#connectWallet').addEventListener('click', connectWallet);
+  $('#disconnectWallet')?.addEventListener('click', disconnectWallet);
   $('#connectHardware').addEventListener('click', connectHardware);
   $('#installApp')?.addEventListener('click', installApp);
   $('#playPause').addEventListener('click', togglePlay);
@@ -1657,12 +1705,12 @@ function bindEvents() {
   if (window.ethereum) {
     startGuardMonitor();
     window.ethereum.on?.('accountsChanged', accounts => {
-      state.address = accounts[0] || '';
-      state.walletLabel = state.address ? shortAddress(state.address) : 'Read-only vault';
-      state.mediaAssets = [];
-      state.chainBalances = {};
-      state.assetStatus = state.address ? 'loading' : 'idle';
-      state.assetMessage = state.address ? 'Indexing wallet balances and owned media...' : 'Connect wallet to index owned media.';
+      if (accounts[0]) {
+        beginWalletSession(accounts[0]);
+      } else {
+        state.localDisconnect = false;
+        resetWalletSession('Connect wallet to index owned media.');
+      }
       persist();
       renderAll();
       if (state.address) refreshWalletAssets();

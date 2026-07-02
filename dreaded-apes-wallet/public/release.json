@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "mode": "production",
   "guardVersion": "1.0.0",
-  "serviceWorkerCache": "dreaded-apes-wallet-v6",
+  "serviceWorkerCache": "dreaded-apes-wallet-v7",
   "brandKit": "dreaded-apes-brand-kit-separated",
   "extensionDownload": "downloads/dreaded-apes-wallet-extension.zip",
   "guardBundle": "guard/v1/dreaded-guard.js"

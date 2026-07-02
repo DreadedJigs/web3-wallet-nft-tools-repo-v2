@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dreaded-apes-wallet-v6';
+const CACHE_NAME = 'dreaded-apes-wallet-v7';
 const APP_SHELL = [
   './',
   './index.html',
