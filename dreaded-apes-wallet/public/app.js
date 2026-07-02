@@ -107,39 +107,39 @@ const nftIndexers = [
 
 const skinPresets = {
   dreaded: {
-    name: 'Dreaded Red',
-    accent: '#d64d4d',
-    secondary: '#d9a441',
-    glow: '#45b6bd',
-    bg: '#0d0d0f',
-    panel: '#171719',
+    name: 'Modern Dreaded',
+    accent: '#FFB703',
+    secondary: '#00D4FF',
+    glow: '#FF3B30',
+    bg: '#0A0A0A',
+    panel: '#0D1B2A',
     image: ''
   },
   obsidian: {
-    name: 'Obsidian Glass',
-    accent: '#f05a5f',
-    secondary: '#f2f0e8',
-    glow: '#78dce8',
-    bg: '#07080b',
-    panel: '#12151b',
+    name: 'Void Signal',
+    accent: '#00D4FF',
+    secondary: '#FFB703',
+    glow: '#1E5BAA',
+    bg: '#0A0A0A',
+    panel: '#07111f',
     image: ''
   },
   phantom: {
-    name: 'Phantom Neon',
-    accent: '#9a7cff',
-    secondary: '#45f2c3',
-    glow: '#55a6ff',
-    bg: '#090811',
-    panel: '#151320',
+    name: 'Graffiti Neon',
+    accent: '#FF2BAA',
+    secondary: '#00D4FF',
+    glow: '#8B5CF6',
+    bg: '#08080d',
+    panel: '#15101e',
     image: ''
   },
   vaultGold: {
-    name: 'Vault Gold',
-    accent: '#d9a441',
-    secondary: '#f05a5f',
-    glow: '#55b978',
-    bg: '#120f0a',
-    panel: '#1d1711',
+    name: 'Dreaded Gold',
+    accent: '#FFB703',
+    secondary: '#FFE600',
+    glow: '#22C55E',
+    bg: '#100c03',
+    panel: '#1b1407',
     image: ''
   }
 };
@@ -289,6 +289,39 @@ function chainFromChainId(chainId) {
 
 function normalizeAddress(value = '') {
   return String(value || '').toLowerCase();
+}
+
+function isEvmAddress(value = '') {
+  return /^0x[a-f0-9]{40}$/i.test(String(value || ''));
+}
+
+function providerSelectedAddress() {
+  const selected = window.ethereum?.selectedAddress || window.ethereum?._state?.accounts?.[0] || '';
+  return isEvmAddress(selected) ? selected : '';
+}
+
+function resolveProviderAddress(accounts = []) {
+  const normalizedAccounts = accounts.filter(isEvmAddress);
+  const selected = providerSelectedAddress();
+  if (selected && (!normalizedAccounts.length || normalizedAccounts.some(account => normalizeAddress(account) === normalizeAddress(selected)))) {
+    return selected;
+  }
+  return normalizedAccounts[0] || selected || '';
+}
+
+async function requestCurrentProviderAddress({ forcePermission = false } = {}) {
+  if (!window.ethereum) return '';
+
+  if (forcePermission && window.ethereum.request) {
+    await window.ethereum.request({
+      method: 'wallet_requestPermissions',
+      params: [{ eth_accounts: {} }]
+    }).catch(() => null);
+  }
+
+  const requested = await window.ethereum.request({ method: 'eth_requestAccounts' }).catch(() => []);
+  const accounts = await window.ethereum.request({ method: 'eth_accounts' }).catch(() => requested);
+  return resolveProviderAddress(accounts.length ? accounts : requested);
 }
 
 function vaultMedia() {
@@ -1447,8 +1480,8 @@ async function connectWallet() {
   }
 
   try {
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    beginWalletSession(accounts[0] || '');
+    const address = await requestCurrentProviderAddress({ forcePermission: state.localDisconnect });
+    beginWalletSession(address);
     const providerChain = chainFromChainId(await window.ethereum.request({ method: 'eth_chainId' }).catch(() => ''));
     if (providerChain) state.activeChain = providerChain.id;
     persist();
@@ -1470,7 +1503,8 @@ async function hydrateConnectedWallet() {
     return;
   }
 
-  if (!accounts[0]) {
+  const address = resolveProviderAddress(accounts);
+  if (!address) {
     resetWalletSession('Connect wallet to index owned media.');
     state.localDisconnect = false;
     persist();
@@ -1478,7 +1512,7 @@ async function hydrateConnectedWallet() {
     return;
   }
 
-  beginWalletSession(accounts[0]);
+  beginWalletSession(address);
   const providerChain = chainFromChainId(await window.ethereum.request({ method: 'eth_chainId' }).catch(() => ''));
   if (providerChain) state.activeChain = providerChain.id;
   persist();
@@ -1705,8 +1739,9 @@ function bindEvents() {
   if (window.ethereum) {
     startGuardMonitor();
     window.ethereum.on?.('accountsChanged', accounts => {
-      if (accounts[0]) {
-        beginWalletSession(accounts[0]);
+      const address = resolveProviderAddress(accounts || []);
+      if (address) {
+        beginWalletSession(address);
       } else {
         state.localDisconnect = false;
         resetWalletSession('Connect wallet to index owned media.');

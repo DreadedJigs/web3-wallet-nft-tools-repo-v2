@@ -1,31 +1,45 @@
 :root {
   color-scheme: dark;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #0d0d0f;
-  color: #f5f1e8;
-  --bg: #0d0d0f;
-  --surface: #171719;
-  --surface-2: #202024;
-  --ink: #f5f1e8;
-  --muted: #a9a49b;
-  --line: #343238;
-  --red: #d64d4d;
-  --gold: #d9a441;
-  --cyan: #45b6bd;
-  --green: #55b978;
-  --violet: #a37be7;
-  --skin-bg: #0d0d0f;
-  --skin-panel: #171719;
-  --skin-panel-2: #202024;
-  --skin-accent: #d64d4d;
-  --skin-secondary: #d9a441;
-  --skin-glow: #45b6bd;
-  --skin-accent-rgb: 214, 77, 77;
-  --skin-secondary-rgb: 217, 164, 65;
-  --skin-glow-rgb: 69, 182, 189;
-  --skin-panel-rgb: 23, 23, 25;
+  font-family: var(--font-ui);
+  background: #0a0a0a;
+  color: #e6e0d4;
+  --font-display: "Space Mono", "Courier New", monospace;
+  --font-ui: Inter, Sora, Manrope, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "IBM Plex Mono", "Space Mono", "Courier New", monospace;
+  --da-void-black: #0a0a0a;
+  --da-space-navy: #0d1b2a;
+  --da-ape-blue: #1e5baa;
+  --da-electric-cyan: #00d4ff;
+  --da-signal-red: #ff3b30;
+  --da-dreaded-gold: #ffb703;
+  --da-signal-yellow: #ffe600;
+  --da-bone-white: #e6e0d4;
+  --da-graffiti-magenta: #ff2baa;
+  --da-success-green: #22c55e;
+  --da-neutral-purple: #8b5cf6;
+  --bg: var(--da-void-black);
+  --surface: #0d1b2a;
+  --surface-2: #111f33;
+  --ink: var(--da-bone-white);
+  --muted: #9aa7b5;
+  --line: rgba(230, 224, 212, 0.16);
+  --red: var(--da-signal-red);
+  --gold: var(--da-dreaded-gold);
+  --cyan: var(--da-electric-cyan);
+  --green: var(--da-success-green);
+  --violet: var(--da-neutral-purple);
+  --skin-bg: #0a0a0a;
+  --skin-panel: #0d1b2a;
+  --skin-panel-2: #111f33;
+  --skin-accent: #ffb703;
+  --skin-secondary: #00d4ff;
+  --skin-glow: #ff3b30;
+  --skin-accent-rgb: 255, 183, 3;
+  --skin-secondary-rgb: 0, 212, 255;
+  --skin-glow-rgb: 255, 59, 48;
+  --skin-panel-rgb: 13, 27, 42;
   --skin-image: none;
-  --shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+  --shadow: 0 26px 78px rgba(0, 0, 0, 0.48);
 }
 
 * { box-sizing: border-box; }
@@ -44,11 +58,11 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(circle at 18% 0%, rgba(var(--skin-accent-rgb), 0.16), transparent 34rem),
-    radial-gradient(circle at 92% 12%, rgba(var(--skin-glow-rgb), 0.13), transparent 30rem),
-    linear-gradient(180deg, rgba(13, 13, 15, 0.48), rgba(13, 13, 15, 0.98) 560px),
-    linear-gradient(90deg, rgba(13, 13, 15, 0.78), rgba(13, 13, 15, 0.42), rgba(13, 13, 15, 0.84)),
-    url("assets/wallet/wallet-hero-bg-1600x900.png") top center / min(100%, 1600px) auto no-repeat,
+    radial-gradient(circle at 18% 0%, rgba(var(--skin-accent-rgb), 0.18), transparent 34rem),
+    radial-gradient(circle at 92% 12%, rgba(var(--skin-secondary-rgb), 0.15), transparent 30rem),
+    linear-gradient(180deg, rgba(10, 10, 10, 0.42), rgba(10, 10, 10, 0.98) 620px),
+    linear-gradient(90deg, rgba(10, 10, 10, 0.86), rgba(13, 27, 42, 0.55), rgba(10, 10, 10, 0.9)),
+    url("assets/modern/dreaded-apes-ui-ux-design-guide.png") top center / min(100%, 1720px) auto no-repeat,
     var(--skin-bg);
 }
 
@@ -62,7 +76,7 @@ body::before {
   background-position: top 84px right -120px;
   background-repeat: no-repeat;
   background-size: min(58vw, 720px) auto;
-  opacity: 0.18;
+  opacity: 0.16;
   filter: saturate(1.14) contrast(1.05);
 }
 
@@ -75,11 +89,13 @@ select {
 button {
   min-height: 42px;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 0.68rem 0.95rem;
   background: linear-gradient(135deg, var(--skin-accent), var(--skin-secondary));
-  color: #fffaf5;
-  font-weight: 800;
+  color: #050505;
+  font-family: var(--font-display);
+  font-weight: 900;
+  text-transform: uppercase;
   cursor: pointer;
   box-shadow: 0 10px 24px rgba(var(--skin-accent-rgb), 0.18);
   transition: transform 140ms ease, border-color 140ms ease, background 140ms ease, box-shadow 140ms ease;
@@ -124,7 +140,7 @@ select {
   border: 1px solid var(--line);
   background: rgba(var(--skin-panel-rgb), 0.92);
   color: var(--ink);
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 0.72rem;
 }
 
@@ -144,6 +160,7 @@ h1 {
 
 h2 {
   margin-bottom: 0;
+  font-family: var(--font-display);
   font-size: 1.05rem;
   line-height: 1.2;
   letter-spacing: 0;
@@ -169,10 +186,12 @@ a {
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid rgba(var(--skin-accent-rgb), 0.16);
-  background: rgba(13, 13, 15, 0.82);
+  border-bottom: 1px solid rgba(var(--skin-accent-rgb), 0.34);
+  background:
+    linear-gradient(90deg, rgba(10, 10, 10, 0.94), rgba(var(--skin-panel-rgb), 0.88)),
+    rgba(10, 10, 10, 0.9);
   backdrop-filter: blur(18px);
-  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.34), inset 0 -1px 0 rgba(var(--skin-secondary-rgb), 0.18);
 }
 
 .brand-lockup {
@@ -185,9 +204,9 @@ a {
 .brand-mark {
   width: 48px;
   height: 48px;
-  border: 1px solid rgba(var(--skin-secondary-rgb), 0.34);
-  border-radius: 8px;
-  background: #1d1a19;
+  border: 1px solid rgba(var(--skin-accent-rgb), 0.72);
+  border-radius: 6px;
+  background: #0a0a0a;
   object-fit: cover;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28), 0 0 24px rgba(var(--skin-accent-rgb), 0.12);
 }
@@ -206,6 +225,7 @@ a {
   color: var(--skin-secondary);
   font-size: 0.72rem;
   font-weight: 900;
+  font-family: var(--font-display);
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -226,13 +246,14 @@ a {
   align-items: center;
   justify-content: center;
   min-height: 28px;
-  border: 1px solid rgba(var(--skin-glow-rgb), 0.22);
-  border-radius: 999px;
+  border: 1px solid rgba(var(--skin-secondary-rgb), 0.34);
+  border-radius: 6px;
   padding: 0.24rem 0.7rem;
   background: rgba(255, 255, 255, 0.06);
   color: var(--ink);
   font-size: 0.78rem;
   font-weight: 800;
+  font-family: var(--font-mono);
   white-space: nowrap;
 }
 
@@ -251,9 +272,11 @@ a.ghost-button {
   justify-content: center;
   min-height: 42px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 0.68rem 0.95rem;
   font-weight: 800;
+  font-family: var(--font-display);
+  text-transform: uppercase;
 }
 
 .ghost-button:hover,
@@ -281,12 +304,12 @@ a.ghost-button:hover {
 }
 
 .surface {
-  border: 1px solid rgba(var(--skin-accent-rgb), 0.14);
-  border-radius: 8px;
+  border: 1px solid rgba(var(--skin-accent-rgb), 0.24);
+  border-radius: 6px;
   background:
     linear-gradient(145deg, rgba(var(--skin-accent-rgb), 0.08), rgba(var(--skin-glow-rgb), 0.045) 46%, rgba(255, 255, 255, 0)),
     rgba(var(--skin-panel-rgb), 0.94);
-  box-shadow: var(--shadow), inset 0 0 0 1px rgba(var(--skin-glow-rgb), 0.035);
+  box-shadow: var(--shadow), inset 0 0 0 1px rgba(var(--skin-secondary-rgb), 0.06);
   backdrop-filter: blur(16px);
 }
 
@@ -308,19 +331,19 @@ a.ghost-button:hover {
   align-items: center;
   gap: 0.8rem;
   min-height: 104px;
-  border: 1px solid rgba(var(--skin-secondary-rgb), 0.28);
-  border-radius: 8px;
+  border: 1px solid rgba(var(--skin-accent-rgb), 0.46);
+  border-radius: 6px;
   padding: 0.78rem;
   overflow: hidden;
   background:
-    linear-gradient(90deg, rgba(var(--skin-panel-rgb), 0.96), rgba(var(--skin-panel-rgb), 0.72)),
-    url("assets/wallet/hardware-wallet-panel-1200x800.png") center / cover;
+    linear-gradient(90deg, rgba(10, 10, 10, 0.95), rgba(var(--skin-panel-rgb), 0.66)),
+    url("assets/modern/dreaded-apes-modern-brand-kit.png") 16% 38% / 720px auto;
 }
 
 .brand-card img {
   width: 68px;
   height: 68px;
-  border-radius: 8px;
+  border-radius: 6px;
   object-fit: cover;
 }
 
@@ -338,6 +361,7 @@ a.ghost-button:hover {
 }
 
 .balance-block strong {
+  font-family: var(--font-mono);
   font-size: 2rem;
   line-height: 1;
 }
@@ -352,7 +376,7 @@ a.ghost-button:hover {
   display: grid;
   gap: 0.62rem;
   border: 1px solid rgba(var(--skin-glow-rgb), 0.18);
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 0.78rem;
   background:
     linear-gradient(135deg, rgba(var(--skin-accent-rgb), 0.18), rgba(var(--skin-glow-rgb), 0.08)),
@@ -388,7 +412,7 @@ a.ghost-button:hover {
   justify-content: center;
   min-height: 40px;
   border: 1px solid rgba(var(--skin-glow-rgb), 0.32);
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 0.62rem 0.78rem;
   background: rgba(var(--skin-glow-rgb), 0.1);
   color: var(--ink);
@@ -435,7 +459,7 @@ a.ghost-button:hover {
   gap: 0.65rem;
   width: 100%;
   min-height: 58px;
-  border-color: var(--line);
+  border-color: rgba(var(--skin-secondary-rgb), 0.16);
   background:
     linear-gradient(135deg, rgba(var(--skin-accent-rgb), 0.08), rgba(var(--skin-glow-rgb), 0.035)),
     rgba(17, 17, 19, 0.82);
@@ -484,7 +508,7 @@ a.ghost-button:hover {
   justify-content: space-between;
   gap: 0.7rem;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 0.7rem;
   background:
     linear-gradient(135deg, rgba(var(--skin-accent-rgb), 0.07), transparent),
@@ -507,9 +531,9 @@ a.ghost-button:hover {
   border-top: 1px solid var(--line);
   padding-top: 1rem;
   background:
-    linear-gradient(90deg, rgba(var(--skin-panel-rgb), 0.92), rgba(var(--skin-panel-rgb), 0.58)),
-    url("assets/wallet/extension-install-card-1200x800.png") center / cover;
-  border-radius: 8px;
+    linear-gradient(90deg, rgba(10, 10, 10, 0.94), rgba(var(--skin-panel-rgb), 0.62)),
+    url("assets/modern/dreaded-font-brand-guidelines.png") 28% 56% / 720px auto;
+  border-radius: 6px;
   padding: 1rem;
   margin: -0.15rem;
 }
@@ -521,9 +545,9 @@ a.ghost-button:hover {
   min-height: calc(100vh - 122px);
   background:
     radial-gradient(circle at 12% 14%, rgba(var(--skin-accent-rgb), 0.2), transparent 32rem),
-    radial-gradient(circle at 82% 18%, rgba(var(--skin-glow-rgb), 0.16), transparent 30rem),
+    radial-gradient(circle at 82% 18%, rgba(var(--skin-secondary-rgb), 0.16), transparent 30rem),
     linear-gradient(180deg, rgba(var(--skin-panel-rgb), 0.72), rgba(var(--skin-panel-rgb), 0.96)),
-    url("assets/wallet/wallet-hero-bg-1600x900.png") center / cover;
+    url("assets/modern/dreaded-apes-ui-ux-design-guide.png") center / cover;
 }
 
 .player-grid {
@@ -538,7 +562,7 @@ a.ghost-button:hover {
   background:
     radial-gradient(circle at 22% 12%, rgba(var(--skin-glow-rgb), 0.18), transparent 22rem),
     linear-gradient(180deg, rgba(9, 9, 11, 0.08), rgba(9, 9, 11, 0.46)),
-    url("assets/wallet/media-vault-empty-state-1200x800.png") center / cover,
+    url("assets/modern/dreaded-apes-modern-brand-kit.png") center / cover,
     #09090b;
 }
 
@@ -560,13 +584,14 @@ a.ghost-button:hover {
 }
 
 .screen-badges span {
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 999px;
+  border: 1px solid rgba(var(--skin-secondary-rgb), 0.34);
+  border-radius: 6px;
   padding: 0.34rem 0.62rem;
   background: rgba(0, 0, 0, 0.38);
   color: #fffaf5;
   font-size: 0.78rem;
   font-weight: 850;
+  font-family: var(--font-mono);
   backdrop-filter: blur(10px);
 }
 
@@ -581,8 +606,8 @@ a.ghost-button:hover {
   gap: 1.4rem;
   width: min(390px, calc(100% - 2rem));
   padding: 1.2rem;
-  border: 1px solid rgba(245, 241, 232, 0.12);
-  border-radius: 8px;
+  border: 1px solid rgba(var(--skin-accent-rgb), 0.28);
+  border-radius: 6px;
   background:
     linear-gradient(180deg, rgba(var(--skin-panel-rgb), 0.76), rgba(var(--skin-panel-rgb), 0.96)),
     url("assets/core/dreaded-apes-logo-1024.png") 118% -16% / 190px auto no-repeat;
@@ -591,6 +616,7 @@ a.ghost-button:hover {
 }
 
 .player-copy h2 {
+  font-family: var(--font-display);
   font-size: 2.1rem;
   line-height: 1.03;
   margin-bottom: 0.35rem;
@@ -604,7 +630,7 @@ a.ghost-button:hover {
 
 .track-meta div {
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 0.72rem;
   background:
     linear-gradient(135deg, rgba(var(--skin-secondary-rgb), 0.07), transparent),
@@ -824,7 +850,7 @@ input[type="range"] {
 .filter-button.active,
 .mode-button.active {
   background: rgba(var(--skin-glow-rgb), 0.16);
-  border-color: var(--skin-glow);
+  border-color: var(--skin-secondary);
   color: #d9fbff;
 }
 
@@ -836,7 +862,7 @@ input[type="range"] {
 
 .media-card {
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 6px;
   background:
     linear-gradient(150deg, rgba(var(--skin-accent-rgb), 0.08), rgba(var(--skin-glow-rgb), 0.035)),
     rgba(17, 17, 19, 0.88);
@@ -930,7 +956,7 @@ input[type="range"] {
 .market-card,
 .tx-card {
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 0.82rem;
   background:
     linear-gradient(140deg, rgba(var(--skin-accent-rgb), 0.07), rgba(var(--skin-glow-rgb), 0.035)),
@@ -1016,7 +1042,7 @@ input[type="range"] {
   padding: 1rem;
   background:
     linear-gradient(135deg, rgba(var(--skin-accent-rgb), 0.12), rgba(var(--skin-glow-rgb), 0.05) 42%, rgba(var(--skin-panel-rgb), 0.96)),
-    url("assets/wallet/guard-shield-panel-1200x800.png") center / cover;
+    url("assets/modern/dreaded-apes-ui-ux-design-guide.png") right center / cover;
 }
 
 .signing .section-title,
@@ -1208,3 +1234,6 @@ input[type="range"] {
     grid-template-columns: 1fr;
   }
 }
+  font-family: var(--font-display);
+  font-family: var(--font-mono);
+  font-family: var(--font-mono);

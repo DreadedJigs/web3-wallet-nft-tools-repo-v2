@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dreaded-apes-wallet-v7';
+const CACHE_NAME = 'dreaded-apes-wallet-v8';
 const APP_SHELL = [
   './',
   './index.html',
@@ -19,6 +19,11 @@ const APP_SHELL = [
   './assets/core/dreaded-apes-app-icon-512.png',
   './assets/core/dreaded-apes-maskable-icon-512.png',
   './assets/core/dreaded-apes-og-card-1200x630.png',
+  './assets/modern/dreaded-apes-modern-brand-kit.png',
+  './assets/modern/dreaded-apes-ui-ux-design-guide.png',
+  './assets/modern/dreaded-font-brand-guidelines.png',
+  './assets/modern/dreaded-apes-palette.json',
+  './assets/modern/dreaded-font-spec.md',
   './assets/wallet/extension-install-card-1200x800.png',
   './assets/wallet/guard-shield-panel-1200x800.png',
   './assets/wallet/media-vault-empty-state-1200x800.png',
