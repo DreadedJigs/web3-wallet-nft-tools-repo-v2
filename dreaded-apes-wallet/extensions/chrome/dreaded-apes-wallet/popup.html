@@ -59,6 +59,42 @@
           <span id="chainCount">0 live</span>
         </div>
         <div class="chain-list" id="chainList"></div>
+        <details class="chain-manager" id="chainManager">
+          <summary>Add / Manage Chains</summary>
+          <form class="chain-form" id="chainForm">
+            <label>
+              <span>Network</span>
+              <input id="chainNameInput" name="chainName" type="text" maxlength="40" placeholder="ApeChain" required />
+            </label>
+            <div class="chain-form-grid">
+              <label>
+                <span>Chain ID</span>
+                <input id="chainIdInput" name="chainId" type="text" placeholder="33139 or 0x8173" required />
+              </label>
+              <label>
+                <span>Symbol</span>
+                <input id="chainSymbolInput" name="chainSymbol" type="text" maxlength="8" placeholder="APE" required />
+              </label>
+            </div>
+            <label>
+              <span>RPC URL</span>
+              <input id="chainRpcInput" name="chainRpc" type="url" placeholder="https://..." required />
+            </label>
+            <label>
+              <span>Explorer URL</span>
+              <input id="chainExplorerInput" name="chainExplorer" type="url" placeholder="https://..." />
+            </label>
+            <label>
+              <span>NFT API Template</span>
+              <input id="chainNftApiInput" name="chainNftApi" type="text" placeholder="https://.../{address}/nft" />
+            </label>
+            <div class="chain-form-actions">
+              <button class="ghost-button" type="submit">Add Chain</button>
+              <button class="ghost-button" id="restoreChains" type="button">Restore Built-ins</button>
+            </div>
+            <p class="chain-note" id="chainNotice">Use {address} in custom NFT APIs.</p>
+          </form>
+        </details>
       </section>
     </aside>
 
