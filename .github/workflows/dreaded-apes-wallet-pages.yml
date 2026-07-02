@@ -38,7 +38,7 @@ jobs:
           release = json.loads(Path("docs/release.json").read_text(encoding="utf-8"))
           assert release["name"] == "Dreaded Apes Wallet"
           assert release["mode"] == "production"
-          assert release["serviceWorkerCache"] == "dreaded-apes-wallet-v12"
+          assert release["serviceWorkerCache"] == "dreaded-apes-wallet-v13"
 
           required = [
               "docs/guard/v1/dreaded-guard.js",

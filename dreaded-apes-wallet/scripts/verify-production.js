@@ -48,7 +48,7 @@ if (guard !== guardDist) fail('public guard and package dist guard bundle are no
 if (!guard.includes('createBackgroundMonitor')) fail('guard bundle is missing background monitor API');
 if (!app.includes('createBackgroundMonitor')) fail('wallet app is not installing the background guard monitor');
 if (!html.includes('id="guardMonitor"')) fail('wallet shell is missing the background guard monitor panel');
-if (!serviceWorker.includes('dreaded-apes-wallet-v12')) fail('service worker cache version was not bumped to v12');
+if (!serviceWorker.includes('dreaded-apes-wallet-v13')) fail('service worker cache version was not bumped to v13');
 if (manifest.name !== 'Dreaded Apes Wallet') fail('PWA manifest has unexpected app name');
 if (!manifest.icons.some(icon => icon.src === 'assets/core/dreaded-apes-app-icon-512.png')) fail('PWA manifest is missing the generated app icon');
 if (!manifest.icons.some(icon => icon.src === 'assets/core/dreaded-apes-maskable-icon-512.png')) fail('PWA manifest is missing the generated maskable icon');

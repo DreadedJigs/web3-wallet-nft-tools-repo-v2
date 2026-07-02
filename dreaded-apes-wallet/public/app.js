@@ -377,6 +377,10 @@ const metadataCache = new Map();
 const emptyCover = 'assets/wallet/media-vault-empty-state-1200x800.png';
 const tokenUriSelector = '0xc87b56dd';
 const guardReviewResolvers = new Map();
+const assetCacheDbName = 'dreaded-apes-wallet-index';
+const assetCacheStore = 'walletSnapshots';
+const assetCacheTtlMs = 10 * 60 * 1000;
+let indexerBackendAvailable = null;
 
 function persist() {
   const snapshot = {
@@ -438,6 +442,110 @@ function chainFromChainId(chainId) {
 
 function normalizeAddress(value = '') {
   return String(value || '').toLowerCase();
+}
+
+function walletRefreshIsCurrent(owner, refreshToken) {
+  return refreshToken === assetRefreshToken && normalizeAddress(state.address) === normalizeAddress(owner);
+}
+
+function assetCacheKey(address = '') {
+  return normalizeAddress(address);
+}
+
+function openAssetCache() {
+  if (!window.indexedDB) return Promise.resolve(null);
+
+  return new Promise(resolve => {
+    const request = window.indexedDB.open(assetCacheDbName, 1);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(assetCacheStore)) {
+        db.createObjectStore(assetCacheStore, { keyPath: 'address' });
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => resolve(null);
+    request.onblocked = () => resolve(null);
+  });
+}
+
+async function readCachedWallet(address) {
+  const key = assetCacheKey(address);
+  if (!key) return null;
+
+  const db = await openAssetCache();
+  if (!db) return null;
+
+  return new Promise(resolve => {
+    let settled = false;
+    const done = value => {
+      if (!settled) {
+        settled = true;
+        resolve(value);
+      }
+    };
+
+    try {
+      const tx = db.transaction(assetCacheStore, 'readonly');
+      const request = tx.objectStore(assetCacheStore).get(key);
+      request.onsuccess = () => {
+        const snapshot = request.result || null;
+        const fresh = snapshot && Date.now() - Number(snapshot.time || 0) <= assetCacheTtlMs;
+        done(fresh ? snapshot : null);
+      };
+      request.onerror = () => done(null);
+      tx.oncomplete = () => db.close();
+      tx.onerror = () => {
+        db.close();
+        done(null);
+      };
+      tx.onabort = () => {
+        db.close();
+        done(null);
+      };
+    } catch {
+      db.close();
+      done(null);
+    }
+  });
+}
+
+async function writeCachedWallet(address, snapshot = {}) {
+  const key = assetCacheKey(address);
+  if (!key) return;
+
+  const db = await openAssetCache();
+  if (!db) return;
+
+  const record = {
+    address: key,
+    time: Date.now(),
+    assets: Array.isArray(snapshot.assets) ? snapshot.assets.slice(0, 600) : [],
+    balances: snapshot.balances && typeof snapshot.balances === 'object' ? snapshot.balances : {},
+    sources: Array.isArray(snapshot.sources) ? snapshot.sources.slice(0, 100) : []
+  };
+
+  await new Promise(resolve => {
+    try {
+      const tx = db.transaction(assetCacheStore, 'readwrite');
+      tx.objectStore(assetCacheStore).put(record);
+      tx.oncomplete = () => {
+        db.close();
+        resolve();
+      };
+      tx.onerror = () => {
+        db.close();
+        resolve();
+      };
+      tx.onabort = () => {
+        db.close();
+        resolve();
+      };
+    } catch {
+      db.close();
+      resolve();
+    }
+  });
 }
 
 function escapeHtml(value = '') {
@@ -773,31 +881,44 @@ function weiHexToEth(hex) {
   return Number(`${integer}.${fraction.toString().padStart(18, '0').slice(0, 8)}`);
 }
 
-async function rpcRequest(chain, method, params) {
+async function rpcRequest(chain, method, params, { timeoutMs = 7000 } = {}) {
   if (!chain.rpc) throw new Error(`${chain.name} RPC is not configured`);
-  const response = await fetch(chain.rpc, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method, params })
-  });
-  if (!response.ok) throw new Error(`${chain.name} RPC returned ${response.status}`);
-  const payload = await response.json();
-  if (payload.error) throw new Error(payload.error.message || `${chain.name} RPC error`);
-  return payload.result;
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(chain.rpc, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method, params }),
+      signal: controller.signal
+    });
+    if (!response.ok) throw new Error(`${chain.name} RPC returned ${response.status}`);
+    const payload = await response.json();
+    if (payload.error) throw new Error(payload.error.message || `${chain.name} RPC error`);
+    return payload.result;
+  } finally {
+    window.clearTimeout(timer);
+  }
 }
 
-async function loadNativeBalances(address) {
-  const entries = await Promise.all(chains.map(async chain => {
+async function loadNativeBalances(address, { targetChains = chains, onBalance } = {}) {
+  const entries = await Promise.all(targetChains.map(async chain => {
+    let entry;
     if (!chain.rpc || !chain.chainId) {
-      return [chain.id, { status: 'unsupported', balance: 0, symbol: chain.symbol }];
+      entry = { status: 'unsupported', balance: 0, symbol: chain.symbol };
+      onBalance?.(chain.id, entry);
+      return [chain.id, entry];
     }
 
     try {
       const result = await rpcRequest(chain, 'eth_getBalance', [address, 'latest']);
-      return [chain.id, { status: 'ready', balance: weiHexToEth(result), symbol: chain.symbol }];
+      entry = { status: 'ready', balance: weiHexToEth(result), symbol: chain.symbol };
     } catch (error) {
-      return [chain.id, { status: 'error', balance: 0, symbol: chain.symbol, message: error.message }];
+      entry = { status: 'error', balance: 0, symbol: chain.symbol, message: error.name === 'AbortError' ? 'timeout' : error.message };
     }
+
+    onBalance?.(chain.id, entry);
+    return [chain.id, entry];
   }));
 
   return Object.fromEntries(entries);
@@ -1051,6 +1172,111 @@ async function fetchJsonWithTimeout(url, { timeoutMs = 9000, headers = {} } = {}
   }
 }
 
+async function backendAvailable() {
+  if (indexerBackendAvailable !== null) return indexerBackendAvailable;
+
+  try {
+    const health = await fetchJsonWithTimeout('/api/indexer/health', { timeoutMs: 1200 });
+    indexerBackendAvailable = Boolean(health?.ok);
+  } catch {
+    indexerBackendAvailable = false;
+  }
+
+  return indexerBackendAvailable;
+}
+
+function proxyAssetUrl(url = '', fallback = '') {
+  const safeUrl = safeAssetUrl(url, fallback);
+  if (!safeUrl || indexerBackendAvailable !== true) return safeUrl;
+
+  try {
+    const parsed = new URL(safeUrl, window.location.href);
+    if (parsed.origin === window.location.origin) return safeUrl;
+    if (['http:', 'https:'].includes(parsed.protocol)) {
+      return `/api/media/proxy?url=${encodeURIComponent(parsed.href)}`;
+    }
+  } catch {
+    return safeUrl;
+  }
+
+  return safeUrl;
+}
+
+function chainQueryString(targetChains = chains) {
+  const params = targetChains
+    .filter(chain => chain.chainId)
+    .map(chain => `chain=${encodeURIComponent(chain.id)}`);
+  return params.length ? `?${params.join('&')}` : '';
+}
+
+async function loadBackendBalances(address) {
+  const payload = await fetchJsonWithTimeout(
+    `/api/wallet/${encodeURIComponent(address)}/balances${chainQueryString()}`,
+    { timeoutMs: 9000 }
+  );
+  return payload.balances && typeof payload.balances === 'object' ? payload.balances : {};
+}
+
+async function loadIndexedBalances(address, owner, refreshToken) {
+  const onBalance = (chainId, entry) => applyBalanceEntry(owner, refreshToken, chainId, entry);
+
+  if (await backendAvailable()) {
+    try {
+      const balances = await loadBackendBalances(address);
+      applyBalanceSnapshot(owner, refreshToken, balances);
+
+      const missingChains = chains.filter(chain => !balances[chain.id]);
+      if (!missingChains.length) return balances;
+
+      const localBalances = await loadNativeBalances(address, { targetChains: missingChains, onBalance });
+      return { ...balances, ...localBalances };
+    } catch {
+      indexerBackendAvailable = false;
+    }
+  }
+
+  return loadNativeBalances(address, { onBalance });
+}
+
+function backendSupportedChains() {
+  const defaultIds = new Set(defaultChains.map(chain => chain.id));
+  return chains.filter(chain => defaultIds.has(chain.id) && chain.chainId && (chain.reservoirHost || chain.blockscoutApi || chain.nftApi));
+}
+
+async function loadBackendChainMedia(address, chain) {
+  const payload = await fetchJsonWithTimeout(
+    `/api/wallet/${encodeURIComponent(address)}/assets?chain=${encodeURIComponent(chain.id)}`,
+    { timeoutMs: 15000 }
+  );
+  return {
+    assets: Array.isArray(payload.assets) ? payload.assets : [],
+    sources: Array.isArray(payload.sources) ? payload.sources : []
+  };
+}
+
+async function loadBackendNftMedia(address, { onBatch } = {}) {
+  const targetChains = backendSupportedChains();
+  const results = await Promise.all(targetChains.map(async chain => {
+    try {
+      const indexed = await loadBackendChainMedia(address, chain);
+      onBatch?.(indexed);
+      return indexed;
+    } catch (error) {
+      const failed = {
+        assets: [],
+        sources: [{ source: `${chain.name} Backend Indexer`, ok: false, error: error.name === 'AbortError' ? 'timeout' : error.message }]
+      };
+      onBatch?.(failed);
+      return failed;
+    }
+  }));
+
+  return {
+    assets: dedupeAssets(results.flatMap(result => result.assets)),
+    sources: mergeSourceHealth([], results.flatMap(result => result.sources))
+  };
+}
+
 function reservoirTokenToMedia(row = {}, source) {
   const token = row.token || row;
   const collection = token.collection || row.collection || {};
@@ -1235,15 +1461,80 @@ function dedupeAssets(assets = []) {
   return [...map.values()];
 }
 
-async function loadNftMedia(address) {
-  const sources = indexerSources();
+function mergeSourceHealth(current = [], incoming = []) {
+  const map = new Map();
+  for (const source of current) {
+    if (source?.source) map.set(source.source, source);
+  }
+  for (const source of incoming) {
+    if (source?.source) map.set(source.source, source);
+  }
+  return [...map.values()];
+}
+
+function applyBalanceEntry(owner, refreshToken, chainId, entry) {
+  if (!walletRefreshIsCurrent(owner, refreshToken)) return false;
+  state.chainBalances = { ...state.chainBalances, [chainId]: entry };
+  renderChains();
+  renderPlayer();
+  return true;
+}
+
+function applyBalanceSnapshot(owner, refreshToken, balances = {}) {
+  if (!walletRefreshIsCurrent(owner, refreshToken)) return false;
+  state.chainBalances = { ...state.chainBalances, ...balances };
+  renderChains();
+  renderPlayer();
+  return true;
+}
+
+function applyCachedSnapshot(owner, refreshToken, snapshot = {}) {
+  if (!walletRefreshIsCurrent(owner, refreshToken)) return false;
+  state.chainBalances = snapshot.balances && typeof snapshot.balances === 'object' ? snapshot.balances : {};
+  state.mediaAssets = Array.isArray(snapshot.assets) ? snapshot.assets : [];
+  state.indexerSources = Array.isArray(snapshot.sources) ? snapshot.sources : [];
+  state.assetOwner = owner;
+  state.assetStatus = state.mediaAssets.length ? 'ready' : 'loading';
+  state.assetMessage = state.mediaAssets.length
+    ? `Showing ${state.mediaAssets.length} cached owned media assets. Refreshing live index...`
+    : 'Scanning chains for owned media...';
+  syncActiveMediaToScope();
+  renderAll();
+  return true;
+}
+
+function applyIndexedBatch(owner, refreshToken, assets = [], sources = []) {
+  if (!walletRefreshIsCurrent(owner, refreshToken)) return false;
+  state.assetOwner = owner;
+  state.indexerSources = mergeSourceHealth(state.indexerSources, sources);
+
+  if (assets.length) {
+    state.mediaAssets = dedupeAssets([...state.mediaAssets, ...assets]);
+  }
+
+  const onlineSources = state.indexerSources.filter(source => source.ok).length;
+  state.assetStatus = state.mediaAssets.length ? 'ready' : 'loading';
+  state.assetMessage = state.mediaAssets.length
+    ? `${state.mediaAssets.length} owned media assets indexed. Refreshing live index...`
+    : onlineSources
+      ? `Scanning ${onlineSources} marketplace routes for owned media...`
+      : 'Scanning chains for owned media...';
+  syncActiveMediaToScope();
+  renderAll();
+  return true;
+}
+
+async function loadNftMedia(address, { onBatch, sources = indexerSources() } = {}) {
   const results = await Promise.all(sources.map(async source => {
     try {
       const payload = await fetchJsonWithTimeout(source.url(address), { timeoutMs: source.timeoutMs });
-      const assets = sourceRowsToMedia(payload, source);
+      const assets = await enrichAssetsWithTokenMetadata(sourceRowsToMedia(payload, source));
+      onBatch?.({ assets, sources: [{ source: source.name, ok: true }] });
       return { source: source.name, ok: true, assets };
     } catch (error) {
-      return { source: source.name, ok: false, error: error.name === 'AbortError' ? 'timeout' : error.message, assets: [] };
+      const failed = { source: source.name, ok: false, error: error.name === 'AbortError' ? 'timeout' : error.message, assets: [] };
+      onBatch?.({ assets: [], sources: [{ source: failed.source, ok: false, error: failed.error }] });
+      return failed;
     }
   }));
   const assets = await enrichAssetsWithTokenMetadata(dedupeAssets(results.flatMap(result => result.assets)));
@@ -1251,23 +1542,47 @@ async function loadNftMedia(address) {
   return { assets, sources: sourceHealth };
 }
 
+async function loadIndexedMedia(address, owner, refreshToken) {
+  const onBatch = batch => applyIndexedBatch(owner, refreshToken, batch.assets || [], batch.sources || []);
+
+  if (await backendAvailable()) {
+    try {
+      const indexed = await loadBackendNftMedia(address, { onBatch });
+      if (indexed.assets.length) return indexed;
+    } catch {
+      indexerBackendAvailable = false;
+    }
+  }
+
+  return loadNftMedia(address, { onBatch });
+}
+
 async function refreshWalletAssets() {
   if (!state.address) return;
   const owner = state.address;
   const refreshToken = assetRefreshToken += 1;
+  const ownerChanged = normalizeAddress(state.assetOwner) !== normalizeAddress(owner);
 
   state.assetStatus = 'loading';
-  state.assetMessage = 'Indexing wallet balances and owned media...';
-  state.mediaAssets = [];
+  state.assetMessage = 'Checking local vault cache and live indexers...';
   state.assetOwner = owner;
+  if (ownerChanged) {
+    state.mediaAssets = [];
+    state.indexerSources = [];
+    state.chainBalances = {};
+  }
   renderAll();
 
+  const cached = await readCachedWallet(owner);
+  if (!walletRefreshIsCurrent(owner, refreshToken)) return;
+  if (cached) applyCachedSnapshot(owner, refreshToken, cached);
+
   const [balances, indexed] = await Promise.all([
-    loadNativeBalances(owner),
-    loadNftMedia(owner)
+    loadIndexedBalances(owner, owner, refreshToken),
+    loadIndexedMedia(owner, owner, refreshToken)
   ]);
 
-  if (refreshToken !== assetRefreshToken || normalizeAddress(state.address) !== normalizeAddress(owner)) return;
+  if (!walletRefreshIsCurrent(owner, refreshToken)) return;
 
   state.chainBalances = balances;
   state.mediaAssets = indexed.assets;
@@ -1282,6 +1597,11 @@ async function refreshWalletAssets() {
       : 'Marketplace and explorer routes did not return NFT metadata. Native balances are still shown.';
   syncActiveMediaToScope();
   state.elapsed = 0;
+  await writeCachedWallet(owner, {
+    balances: state.chainBalances,
+    assets: state.mediaAssets,
+    sources: state.indexerSources
+  });
   persist();
   renderAll();
 }
@@ -1571,7 +1891,7 @@ function renderMediaGrid() {
     return `
       <article class="media-card ${item.id === state.activeMedia ? 'active' : ''}">
         <button class="media-art-button" type="button" data-play="${escapeAttr(item.id)}" aria-label="Load ${escapeAttr(item.title)}">
-          <img class="media-thumb" src="${escapeAttr(safeAssetUrl(item.cover, 'assets/wallet/media-vault-empty-state-1200x800.png'))}" alt="" aria-hidden="true" loading="lazy" />
+          <img class="media-thumb" src="${escapeAttr(proxyAssetUrl(item.cover, 'assets/wallet/media-vault-empty-state-1200x800.png'))}" alt="" aria-hidden="true" loading="lazy" />
         </button>
         <div class="media-body">
           <div class="media-row">
@@ -1637,8 +1957,8 @@ function renderPlayer() {
 
   const chain = mediaChain(item);
   const imageUrl = item.type === 'photo'
-    ? safeAssetUrl(item.mediaUrl || item.cover, '')
-    : safeAssetUrl(item.cover, '');
+    ? proxyAssetUrl(item.mediaUrl || item.cover, '')
+    : proxyAssetUrl(item.cover, '');
   if (playerImage && imageUrl) {
     playerImage.hidden = false;
     playerImage.alt = item.title;
@@ -2221,7 +2541,7 @@ async function connectWallet() {
     if (providerChain) state.activeChain = providerChain.id;
     persist();
     renderAll();
-    if (state.address) await refreshWalletAssets();
+    if (state.address) refreshWalletAssets();
   } catch (error) {
     state.hardware = 'Connection declined';
     renderChains();

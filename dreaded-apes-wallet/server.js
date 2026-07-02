@@ -1,6 +1,7 @@
 const http = require('http');
 const fs = require('fs/promises');
 const path = require('path');
+const { getAssets, getBalances, isEvmAddress, proxyMedia } = require('./indexer');
 
 const port = Number(process.env.PORT || 3000);
 const publicDir = path.resolve(__dirname, 'public');
@@ -24,10 +25,10 @@ function securityHeaders() {
       "default-src 'self'",
       "script-src 'self'",
       "style-src 'self'",
-      "img-src 'self' data:",
+      "img-src 'self' data: blob: https:",
       "font-src 'self'",
       "connect-src 'self' https:",
-      "media-src 'self' blob:",
+      "media-src 'self' blob: https:",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
@@ -68,6 +69,79 @@ async function readStaticFile(urlPath) {
   }
 }
 
+function jsonResponse(res, status, body) {
+  res.writeHead(status, {
+    ...securityHeaders(),
+    'Content-Type': 'application/json; charset=utf-8',
+    'Cache-Control': 'no-store'
+  });
+  res.end(JSON.stringify(body));
+}
+
+function parseChainIds(url) {
+  return url.searchParams.getAll('chain')
+    .flatMap(value => String(value || '').split(','))
+    .map(value => value.trim())
+    .filter(Boolean);
+}
+
+async function handleApiRequest(req, res, url) {
+  if (url.pathname === '/api/indexer/health') {
+    jsonResponse(res, 200, { ok: true, service: 'Dreaded Indexer', mode: 'backend' });
+    return true;
+  }
+
+  const balanceMatch = url.pathname.match(/^\/api\/wallet\/(0x[a-fA-F0-9]{40})\/balances$/);
+  if (balanceMatch) {
+    const address = balanceMatch[1];
+    if (!isEvmAddress(address)) {
+      jsonResponse(res, 400, { ok: false, error: 'Invalid wallet address' });
+      return true;
+    }
+    try {
+      const balances = await getBalances(address, { chainIds: parseChainIds(url) });
+      jsonResponse(res, 200, { ok: true, address, balances });
+    } catch (error) {
+      jsonResponse(res, 502, { ok: false, error: error.message || 'Balance index failed' });
+    }
+    return true;
+  }
+
+  const assetMatch = url.pathname.match(/^\/api\/wallet\/(0x[a-fA-F0-9]{40})\/assets$/);
+  if (assetMatch) {
+    const address = assetMatch[1];
+    if (!isEvmAddress(address)) {
+      jsonResponse(res, 400, { ok: false, error: 'Invalid wallet address' });
+      return true;
+    }
+    try {
+      const indexed = await getAssets(address, { chainIds: parseChainIds(url) });
+      jsonResponse(res, 200, { ok: true, address, ...indexed });
+    } catch (error) {
+      jsonResponse(res, 502, { ok: false, error: error.message || 'Asset index failed' });
+    }
+    return true;
+  }
+
+  if (url.pathname === '/api/media/proxy') {
+    const mediaUrl = url.searchParams.get('url') || '';
+    try {
+      const media = await proxyMedia(mediaUrl);
+      res.writeHead(200, {
+        ...securityHeaders(),
+        'Content-Type': media.contentType,
+        'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800'
+      });
+      res.end(media.body);
+    } catch (error) {
+      jsonResponse(res, 502, { ok: false, error: error.message || 'Media proxy failed' });
+    }
+    return true;
+  }
+
+  return false;
+}
+
 const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
@@ -79,6 +153,13 @@ const server = http.createServer(async (req, res) => {
         'Cache-Control': 'no-store'
       });
       res.end(JSON.stringify({ ok: true, app: 'Dreaded Apes Wallet', mode: 'media-vault' }));
+      return;
+    }
+
+    if (url.pathname.startsWith('/api/')) {
+      const handled = await handleApiRequest(req, res, url);
+      if (handled) return;
+      jsonResponse(res, 404, { ok: false, error: 'API route not found' });
       return;
     }
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dreaded-apes-wallet-v12';
+const CACHE_NAME = 'dreaded-apes-wallet-v13';
 const APP_SHELL = [
   './',
   './index.html',
@@ -58,12 +58,18 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const request = event.request;
   if (request.method !== 'GET') return;
+  const url = new URL(request.url);
+
+  if (url.pathname.includes('/api/')) {
+    event.respondWith(fetch(request));
+    return;
+  }
 
   event.respondWith(
     fetch(request)
       .then(response => {
         const copy = response.clone();
-        if (response.ok && new URL(request.url).origin === self.location.origin) {
+        if (response.ok && url.origin === self.location.origin) {
           caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
         }
         return response;
